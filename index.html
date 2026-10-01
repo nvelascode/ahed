@@ -196,6 +196,22 @@ html.locked body > *:not(#lockScreen):not(script){visibility:hidden}
 .bk-pass{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut);margin-bottom:10px}
 .bk-pass input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--txt);font:inherit;font-size:14px}
 dialog:has(#secOff){max-width:520px;max-height:92vh;overflow:auto}
+#viewSum,#viewMarket,#viewStocks,#viewPos,#viewCdt{margin-bottom:6px}
+.span-all{grid-column:1 / -1}
+.sum-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.sum-big{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.sum-big span{font-size:12.5px;color:var(--mut)} .sum-big b{font-size:30px;font-weight:600;letter-spacing:-.4px;line-height:1.15} .sum-big small{font-size:12px;color:var(--mut)}
+.sum-cards{margin-top:14px}
+.contrib{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.ct-row{display:grid;grid-template-columns:minmax(150px,230px) 1fr minmax(110px,150px);gap:12px;align-items:center;font-size:13.5px}
+.ct-row span{color:var(--mut)} .ct-row b{text-align:right;font-weight:600}
+.ct-bar{height:10px;background:var(--panel2);border-radius:5px;overflow:hidden} .ct-bar i{display:block;height:100%} .ct-bar i.up{background:var(--up)} .ct-bar i.dn{background:var(--dn)}
+.sum-sens{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px}
+.sum-sens div{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:3px} .sum-sens span{font-size:12.5px;color:var(--mut)} .sum-sens b{font-size:18px;font-weight:600}
+.sum-note{margin-top:18px}
+.sum-cta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.hide-amt .num{filter:blur(9px);user-select:none}
+@media (max-width:860px){.sum-hero,.sum-sens{grid-template-columns:1fr}.ct-row{grid-template-columns:1fr auto;gap:6px}.ct-bar{grid-column:1 / -1;order:3}}
 @media (max-width:860px){.tools{grid-template-columns:1fr}}
 @media (max-width:860px){.sk-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
 @media (max-width:860px){.mk{grid-template-columns:1fr;gap:18px}}
@@ -280,13 +296,25 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 </header>
 
 <nav class="views" role="tablist" aria-label="Vistas">
-  <button class="vtab" role="tab" aria-selected="true" data-view="market">Mercado</button>
+  <button class="vtab" role="tab" aria-selected="true" data-view="sum">Resumen</button>
+  <button class="vtab" role="tab" aria-selected="false" data-view="market">Mercado</button>
   <button class="vtab" role="tab" aria-selected="false" data-view="stocks">Mis acciones</button>
   <button class="vtab" role="tab" aria-selected="false" data-view="pos">Portafolio</button>
   <button class="vtab" role="tab" aria-selected="false" data-view="cdt">Mis CDT</button>
 </nav>
 
-<div id="viewMarket">
+<div id="viewSum">
+  <div class="sk-head">
+    <div>
+      <h2>Resumen</h2>
+      <div class="sub">Todo lo que tienes, medido en pesos: CDT, acciones, ETF y cripto. Aquí ves cuánto vale, cuánto has ganado y cuánto rinde por año cada parte.</div>
+    </div>
+    <div class="sk-actions"><span class="pill" id="sumFx">Dólar —</span><button class="btn" id="sumHide" aria-pressed="false">Ocultar montos</button></div>
+  </div>
+  <div id="sumBody"></div>
+</div>
+
+<div id="viewMarket" hidden>
 
 <section class="grid" id="grid" aria-live="polite"></section>
 
@@ -346,7 +374,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
       <h2>Mi portafolio</h2>
       <div class="sub">Agrega cada compra con su fecha y su broker. Ahed calcula solo el costo promedio, el dólar promedio y tu ganancia en pesos, separando lo que viene del precio del activo y lo que viene del dólar. Sirve para compras de hace años, varios brokers y Bitcoin.</div>
     </div>
-    <div class="sk-actions"><button class="btn primary" id="posScan">Leer extracto</button><button class="btn" id="posAdd">Agregar compra</button><button class="btn" id="posImport">Importar</button><button class="btn" id="posBackup">Respaldo</button></div>
+    <div class="sk-actions"><button class="btn primary" id="posScan">Leer extracto</button><button class="btn" id="posAdd">Agregar compra</button><button class="btn" id="posAddCrypto">Agregar cripto</button><button class="btn" id="posImport">Importar</button><button class="btn" id="posBackup">Respaldo</button></div>
   </div>
   <div id="posSummary"></div>
   <div id="brokerBar"></div>
@@ -408,6 +436,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <dialog id="dlgLot">
   <h2 id="lotTitle">Agregar compra</h2>
   <div class="lot-form">
+    <label class="wide">Tipo de activo<select id="lotKind"><option value="stock">Acción o ETF</option><option value="crypto">Cripto (Bitcoin, Ethereum…)</option></select></label>
     <label>Activo<input id="lotSym" list="symList" autocapitalize="characters" autocomplete="off" placeholder="META, VOO, BTC…"></label>
     <label>Broker o lugar<input id="lotBroker" list="brokerList" autocomplete="off" placeholder="Interactive Brokers, Binance…"></label>
     <label>Fecha de compra<input id="lotDate" type="date"></label>
@@ -490,7 +519,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. "Mis acciones": historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 12.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. "Mis acciones": historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 13.
 </p>
 
 <dialog id="dlg">
@@ -1181,6 +1210,7 @@ function loadLots(){
   return [];
 }
 let LOTS = loadLots();
+LOTS.forEach(l => { if (l.kind === 'crypto') CRYPTO.add(l.sym); });
 const saveLots = () => { try{ vset(LOTS_KEY, JSON.stringify(LOTS)); }catch(e){} };
 function loadPF(){
   let syms = null;
@@ -1228,12 +1258,18 @@ function posGain(sym){
 }
 
 /* ---------- precios de cualquier activo ---------- */
+async function binQuote(sym){
+  const d = await getJSON(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}USDT`, false);
+  if (!d || !d.lastPrice) throw new Error('sin datos');
+  return {c:+d.lastPrice, pc:+d.prevClosePrice, dp:+d.priceChangePercent, d:+d.priceChange, h:+d.highPrice, l:+d.lowPrice, t:Math.floor(Date.now() / 1000)};
+}
 async function quoteOf(sym){
-  if (isCrypto(sym)){
-    const d = await getJSON(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}USDT`, false);
-    return {c:+d.lastPrice, pc:+d.prevClosePrice, dp:+d.priceChangePercent, d:+d.priceChange, h:+d.highPrice, l:+d.lowPrice, t:Math.floor(Date.now() / 1000)};
+  if (isCrypto(sym)) return binQuote(sym);
+  try{ return await fhQuote(sym); }
+  catch(e){
+    if (/^[A-Z0-9]{2,10}$/.test(sym)){ try{ const q = await binQuote(sym); CRYPTO.add(sym); return q; }catch(e2){} }
+    throw e;
   }
-  return fhQuote(sym);
 }
 
 /* ---------- dólar (TRM) por fecha ---------- */
@@ -1625,11 +1661,13 @@ $('#pfSave').onclick = () => {
   if (!PF.some(p => p.sym === selSym)) selSym = null;
   dlgPf.close(); drawStocks(); loadWatch(false);
 };
+const VIEWS = {sum:'#viewSum', market:'#viewMarket', stocks:'#viewStocks', pos:'#viewPos', cdt:'#viewCdt'};
 document.querySelectorAll('.vtab').forEach(b => b.onclick = () => {
   const v = b.dataset.view;
   document.querySelectorAll('.vtab').forEach(x => x.setAttribute('aria-selected', x === b));
-  $('#viewMarket').hidden = v !== 'market'; $('#viewStocks').hidden = v !== 'stocks'; $('#viewPos').hidden = v !== 'pos'; $('#viewCdt').hidden = v !== 'cdt';
+  Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = k !== v; });
   if (v === 'stocks'){ if (!watchStarted){ watchStarted = true; drawStocks(); loadWatch(false); } else refreshWatchQuotes(); }
+  if (v === 'sum'){ drawSum(); quotesOnly(); }
   if (v === 'pos'){ drawPos(); quotesOnly(); }
   if (v === 'cdt'){ drawCdt(); quotesOnly(); }
 });
@@ -1665,16 +1703,23 @@ function cdtCalc(c, today){
 }
 function equityCalc(){
   const fx = S.usdcop.price;
-  const out = {rows:[], valUSD:0, valCOP:0, invCOP:0, plCOP:0, priceEff:0, fxEff:0, noFx:0, noPx:0, byBroker:{}};
+  const mkc = () => ({val:0, inv:0, pl:0, pe:0, fe:0, valUSD:0, flows:[], ageNum:0, ageDen:0, valDated:0, noDate:0});
+  const out = {rows:[], valUSD:0, valCOP:0, invCOP:0, plCOP:0, priceEff:0, fxEff:0, noFx:0, noPx:0, byBroker:{}, cls:{stock:mkc(), crypto:mkc()}};
   Object.values(AGG).forEach(a => {
     const px = pxOf(a.sym);
     if (!px || !fx){ out.noPx++; return; }
+    const cl = out.cls[isCrypto(a.sym) ? 'crypto' : 'stock'];
     const row = {a, px, valUSD:0, valCOP:0, inv:0, pl:0, pe:0, fe:0};
     a.lots.forEach(l => {
       const g = lotGain(l, px, fx);
       row.valUSD += g.valUSD; row.valCOP += g.valCOP; row.inv += g.inv; row.pl += g.pl; row.pe += g.pe; row.fe += g.fe;
       if (!l.fx) out.noFx++;
       const b = l.broker || 'Sin broker'; out.byBroker[b] = (out.byBroker[b] || 0) + g.valCOP;
+      cl.val += g.valCOP; cl.inv += g.inv; cl.pl += g.pl; cl.pe += g.pe; cl.fe += g.fe; cl.valUSD += g.valUSD;
+      if (l.date){
+        const t = Date.parse(l.date + 'T12:00:00Z');
+        cl.flows.push({t, v:-g.inv}); cl.valDated += g.valCOP; cl.ageNum += g.inv * Math.max(0, (Date.now() - t) / 86400000); cl.ageDen += g.inv;
+      } else cl.noDate++;
     });
     out.valUSD += row.valUSD; out.valCOP += row.valCOP; out.invCOP += row.inv; out.plCOP += row.pl; out.priceEff += row.pe; out.fxEff += row.fe;
     out.rows.push(row);
@@ -1817,8 +1862,10 @@ async function quotesOnly(){
   }));
   if (!$('#viewCdt').hidden) drawCdt();
   if (!$('#viewPos').hidden) drawPos();
+  if (!$('#viewSum').hidden) drawSum();
 }
-setInterval(() => { if ((!$('#viewCdt').hidden || !$('#viewPos').hidden) && !document.hidden) quotesOnly(); }, 30000);
+setInterval(() => { if ((!$('#viewCdt').hidden || !$('#viewPos').hidden || !$('#viewSum').hidden) && !document.hidden) quotesOnly(); }, 30000);
+setInterval(() => { if (!$('#viewSum').hidden && !document.hidden) drawSum(); }, 15000);
 
 /* ---------- Vista Portafolio ---------- */
 const BROKER_COLORS = ['#6cb6ff', '#f2b84b', '#35d6a4', '#c792ea', '#ff8f6b', '#8ad1c2', '#e5c07b', '#7aa2f7'];
@@ -1850,7 +1897,7 @@ function drawPos(){
     <div class="alloc-l">${bs.map(([b, v], i) => `<span><i style="background:${BROKER_COLORS[i % BROKER_COLORS.length]}"></i>${esc(b)} ${(v / tot * 100).toFixed(0)}% · ${copF(v)}</span>`).join('')}</div>` : '';
 
   const cards = entries.map(a => ({a, g:posGain(a.sym), px:pxOf(a.sym)})).sort((x, y) => ((y.g ? y.g.valCOP : 0) - (x.g ? x.g.valCOP : 0)));
-  $('#posCards').innerHTML = cards.map(({a, g, px}) => {
+  const cardsList = cards.map(({a, g, px}) => {
     const kind = isCrypto(a.sym) ? 'Cripto' : 'Acción / ETF';
     const bro = Object.entries(a.brokers).map(([b, q]) => `<span class="flag">${esc(b)} · ${qtyF(q)}</span>`).join('');
     const lots = a.lots.map(l => {
@@ -1861,7 +1908,7 @@ function drawPos(){
         ${x ? `<div class="lot-d ${x.pl >= 0 ? 'up' : 'dn'}">${copS(x.pl)} <small>(precio ${copS(x.pe)} · dólar ${copS(x.fe)})</small></div>` : ''}
         <div class="lot-b"><button type="button" class="btn sm" data-edit="${esc(l.id)}">Editar</button><button type="button" class="btn sm" data-del="${esc(l.id)}">Borrar</button></div></div>`;
     }).join('');
-    return `<article class="cdt-card pos-card">
+    return {c:isCrypto(a.sym), h:`<article class="cdt-card pos-card">
       <div class="c-top"><span class="c-sym">${esc(a.sym)}</span><span class="flag">${kind}</span></div>
       <div class="c-price">${g ? copF(g.valCOP) : '—'}</div>
       <div class="sub">${qtyF(a.sh)} unidades${px ? ' · US$ ' + fmtUSD(px) + ' c/u' : ''}${g ? ' · US$ ' + fmtUSD(g.valUSD) : ''}</div>
@@ -1871,8 +1918,10 @@ function drawPos(){
       <div class="flags">${bro}</div>
       <details><summary>Compras (${a.lots.length})</summary><div class="lots">${lots}</div></details>
       <button type="button" class="btn" data-add="${esc(a.sym)}">Agregar compra de ${esc(a.sym)}</button>
-    </article>`;
-  }).join('');
+    </article>`};
+  });
+  const grp = (t, arr) => arr.length ? `<h4 class="sec-h4 span-all">${t}</h4>` + arr.map(x => x.h).join('') : '';
+  $('#posCards').innerHTML = grp('Acciones y ETF', cardsList.filter(x => !x.c)) + grp('Cripto', cardsList.filter(x => x.c));
 }
 
 /* ---------- agregar / editar compra ---------- */
@@ -1882,9 +1931,11 @@ function refreshLists(){
   $('#symList').innerHTML = [...new Set([...PF.map(p => p.sym), ...CRYPTO])].map(s => `<option value="${esc(s)}">`).join('');
   $('#brokerList').innerHTML = [...new Set([...LOTS.map(l => l.broker).filter(Boolean), ...BROKER_HINTS])].map(b => `<option value="${esc(b)}">`).join('');
 }
-function openLot(l, sym){
+function openLot(l, sym, kind){
   editingLot = l ? l.id : null; fxTouched = !!(l && l.fx);
   refreshLists();
+  $('#lotKind').value = l ? (l.kind || (isCrypto(l.sym) ? 'crypto' : 'stock')) : (kind || (sym && isCrypto(sym) ? 'crypto' : 'stock'));
+  lotKindUI();
   $('#lotTitle').textContent = l ? 'Editar compra' : 'Agregar compra';
   $('#lotSym').value = l ? l.sym : (sym || '');
   $('#lotBroker').value = l ? l.broker : (LOTS.length ? LOTS[LOTS.length - 1].broker || '' : '');
@@ -1898,6 +1949,13 @@ function openLot(l, sym){
   dlgLot.showModal();
   if (!l || !l.fx) lotAutoFx();
 }
+function lotKindUI(){
+  const c = $('#lotKind').value === 'crypto';
+  $('#lotSym').placeholder = c ? 'BTC, ETH, SOL…' : 'META, VOO, AAPL…';
+  $('#lotBroker').placeholder = c ? 'Binance, Bitso, billetera propia…' : 'Interactive Brokers, Tyba…';
+}
+$('#lotKind').addEventListener('change', lotKindUI);
+$('#lotSym').addEventListener('change', () => { const sy = $('#lotSym').value.trim().toUpperCase(); if (isCrypto(sy)){ $('#lotKind').value = 'crypto'; lotKindUI(); } });
 function lotCurLabel(){ $('#lotPriceL').firstChild.textContent = $('#lotCur').value === 'COP' ? 'Precio por unidad (COP)' : 'Precio por unidad (US$)'; }
 async function lotAutoFx(){
   const d = parseDate($('#lotDate').value); if (!d || fxTouched) return;
@@ -1928,7 +1986,9 @@ $('#lotSave').onclick = async () => {
       if (!fx) return err('Para una compra en pesos necesito el dólar de esa fecha. Escríbelo en el campo de dólar.');
       cop = pr * qty; price = pr / fx;
     }
-    const lot = {id:editingLot || uid(), sym, broker:$('#lotBroker').value.trim(), date, qty, price, fx, cop};
+    const kind = $('#lotKind').value === 'crypto' ? 'crypto' : 'stock';
+    if (kind === 'crypto') CRYPTO.add(sym);
+    const lot = {id:editingLot || uid(), sym, kind, broker:$('#lotBroker').value.trim(), date, qty, price, fx, cop};
     const i = LOTS.findIndex(x => x.id === lot.id);
     if (i >= 0) LOTS[i] = lot; else LOTS.push(lot);
     afterLotsChange(); dlgLot.close();
@@ -1940,6 +2000,7 @@ function afterLotsChange(){
   quotesOnly(); if (watchStarted) loadWatch(false);
 }
 $('#posAdd').onclick = () => openLot(null);
+$('#posAddCrypto').onclick = () => openLot(null, '', 'crypto');
 $('#posCards').addEventListener('click', e => {
   const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), add = e.target.closest('[data-add]');
   if (ed) openLot(LOTS.find(l => l.id === ed.dataset.edit));
@@ -1961,7 +2022,7 @@ $('#impGo').onclick = async () => {
     const sym = (t[1] || '').toUpperCase().replace(/^\$/, ''), qty = parseNum(t[2]), price = parseNum(t[3]);
     if (!date || !SYM_RE.test(sym) || !(qty > 0) || !(price > 0)){ bad.push(i + 1); return; }
     const fx = parseNum(t[5]);
-    rows.push({id:uid(), sym, broker:t[4] || '', date, qty, price, fx: fx > 0 ? fx : null, cop:null});
+    rows.push({id:uid(), sym, kind:isCrypto(sym) ? 'crypto' : 'stock', broker:t[4] || '', date, qty, price, fx: fx > 0 ? fx : null, cop:null});
   });
   if (!rows.length){ out.textContent = 'No encontré compras válidas. Revisa el formato.' + (bad.length ? ' Líneas con problema: ' + bad.join(', ') : ''); return; }
   $('#impGo').disabled = true;
@@ -2004,7 +2065,8 @@ async function restoreFrom(txt){
   }
   if (!j || j.app !== 'ahed' || !Array.isArray(j.lots)) return 'Ese archivo no parece un respaldo de Ahed.';
   if (!confirm(`Esto reemplazará tus datos actuales por el respaldo (${j.lots.length} compras, ${(j.cdt || []).length} CDT). ¿Continuar?`)) return 'Cancelado.';
-  LOTS = j.lots.filter(l => l && SYM_RE.test(l.sym) && l.qty > 0 && l.price > 0).map(l => ({id:l.id || uid(), sym:l.sym, broker:l.broker || '', date:l.date || '', qty:+l.qty, price:+l.price, fx:l.fx > 0 ? +l.fx : null, cop:l.cop > 0 ? +l.cop : null}));
+  LOTS = j.lots.filter(l => l && SYM_RE.test(l.sym) && l.qty > 0 && l.price > 0).map(l => ({id:l.id || uid(), sym:l.sym, kind:l.kind === 'crypto' ? 'crypto' : 'stock', broker:l.broker || '', date:l.date || '', qty:+l.qty, price:+l.price, fx:l.fx > 0 ? +l.fx : null, cop:l.cop > 0 ? +l.cop : null}));
+  LOTS.forEach(l => { if (l.kind === 'crypto') CRYPTO.add(l.sym); });
   CDT = Array.isArray(j.cdt) ? j.cdt : []; saveCdt(); toolsInit = false;
   try{ vset(WATCH_KEY, JSON.stringify(Array.isArray(j.watch) ? j.watch : [])); }catch(e){}
   PF = loadPF(); syncPF(); savePF(); saveLots();
@@ -2124,7 +2186,7 @@ $('#scAdd').onclick = async () => {
       if (p.cur === 'COP'){ if (!fx){ skipped.push(p.sym + ' (en pesos, necesita fecha para el dólar)'); return; } price = p.pr / fx; cop = p.pr * p.qty; }
       const dup = LOTS.some(l => l.sym === p.sym && l.date === p.date && Math.abs(l.qty - p.qty) < 1e-9 && (l.broker || '') === p.broker && Math.abs(l.price - price) < 1e-6);
       if (dup){ skipped.push(p.sym + ' (ya estaba cargada)'); return; }
-      lots.push({id:uid(), sym:p.sym, broker:p.broker, date:p.date, qty:p.qty, price, fx, cop});
+      lots.push({id:uid(), sym:p.sym, kind:isCrypto(p.sym) ? 'crypto' : 'stock', broker:p.broker, date:p.date, qty:p.qty, price, fx, cop});
     });
     if (lots.length){ LOTS = LOTS.concat(lots); afterLotsChange(); }
     const sinFecha = lots.filter(l => !l.date).length;
@@ -2133,12 +2195,137 @@ $('#scAdd').onclick = async () => {
   } finally { $('#scAdd').disabled = false; }
 };
 
+/* ---------- Resumen: patrimonio y rentabilidad global ---------- */
+const DAY = 86400000;
+function xirr(flows){
+  if (!flows.some(f => f.v > 0) || !flows.some(f => f.v < 0)) return null;
+  const t0 = Math.min(...flows.map(f => f.t)), span = (Math.max(...flows.map(f => f.t)) - t0) / DAY;
+  if (span < 1) return null;
+  const npv = r => flows.reduce((a, f) => a + f.v / Math.pow(1 + r, (f.t - t0) / (365 * DAY)), 0);
+  let lo = -0.9999, hi = 1e6, flo = npv(lo), fhi = npv(hi);
+  if (!(flo * fhi < 0)) return null;
+  let mid = 0;
+  for (let i = 0; i < 200; i++){
+    mid = (lo + hi) / 2; const fm = npv(mid);
+    if (Math.abs(fm) < 1e-7) break;
+    if (flo * fm < 0){ hi = mid; fhi = fm; } else { lo = mid; flo = fm; }
+  }
+  return mid;
+}
+function sumCalc(){
+  const fx = S.usdcop.price, today = bogKey(Date.now()), now = Date.now();
+  const eq = equityCalc();
+  const cs = CDT.map(c => ({c, r:cdtCalc(c, today)}));
+  const cdt = {val:0, inv:0, pl:0, ann:null, n:cs.length};
+  let wNet = 0, wCap = 0;
+  const cdtFlows = []; let cdtDatedVal = 0, cdtAgeNum = 0, cdtAgeDen = 0;
+  cs.forEach(({c, r}) => {
+    cdt.val += r.now; cdt.inv += c.capital; cdt.pl += r.netAcc;
+    if (c.start <= today){
+      wNet += c.capital * r.netEA; wCap += c.capital;
+      cdtFlows.push({t:Date.parse(c.start + 'T12:00:00Z'), v:-c.capital}); cdtDatedVal += r.now;
+      cdtAgeNum += c.capital * Math.max(0, daysBetween(c.start, today)); cdtAgeDen += c.capital;
+    }
+  });
+  cdt.ann = wCap > 0 ? wNet / wCap / 100 : null;
+  cdt.ret = cdt.inv > 0 ? cdt.pl / cdt.inv : null;
+  const mk = k => {
+    const c = eq.cls[k], ageDen = c.ageDen;
+    const avgAge = ageDen > 0 ? c.ageNum / ageDen : 0;
+    const flows = c.flows.concat(c.valDated > 0 ? [{t:now, v:c.valDated}] : []);
+    return {val:c.val, inv:c.inv, pl:c.pl, pe:c.pe, fe:c.fe, ret:c.inv > 0 ? c.pl / c.inv : null, avgAge, noDate:c.noDate,
+      ann: avgAge >= 180 ? xirr(flows) : null, flows, valUSD:c.valUSD};
+  };
+  const stock = mk('stock'), crypto = mk('crypto');
+  const val = cdt.val + stock.val + crypto.val, inv = cdt.inv + stock.inv + crypto.inv, pl = cdt.pl + stock.pl + crypto.pl;
+  const allFlows = cdtFlows.concat(stock.flows.filter(f => f.t < now), crypto.flows.filter(f => f.t < now));
+  const datedVal = cdtDatedVal + (eq.cls.stock.valDated || 0) + (eq.cls.crypto.valDated || 0);
+  const ageDen = cdtAgeDen + eq.cls.stock.ageDen + eq.cls.crypto.ageDen;
+  const avgAge = ageDen > 0 ? (cdtAgeNum + eq.cls.stock.ageNum + eq.cls.crypto.ageNum) / ageDen : 0;
+  const ann = avgAge >= 180 ? xirr(allFlows.concat(datedVal > 0 ? [{t:now, v:datedVal}] : [])) : null;
+  return {fx, eq, cdt, stock, crypto, val, inv, pl, ret:inv > 0 ? pl / inv : null, ann, avgAge, valUSD:eq.valUSD, valCOPusd:eq.valCOP};
+}
+const annF = v => v == null ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '% E.A.';
+function drawSum(){
+  const box = $('#sumBody'); if (!box) return;
+  const c = sumCalc();
+  const has = c.cdt.n || c.stock.val || c.crypto.val || Object.keys(AGG).length;
+  const pill = $('#sumFx'); if (pill) pill.textContent = c.fx ? 'Dólar $ ' + fmtCOP(c.fx) : 'Dólar —';
+  if (!has){
+    box.innerHTML = `<div class="empty">Aquí verás el resumen de todo lo que tienes: CDT, acciones, ETF y cripto, en pesos. Empieza cargando algo:
+      <div class="sum-cta"><button class="btn primary" data-go="pos">Agregar compras o leer un extracto</button><button class="btn" data-go="cdt">Agregar un CDT</button></div></div>`;
+    return;
+  }
+  if (!c.fx){ box.innerHTML = '<div class="empty">Esperando el precio del dólar para calcular en pesos…</div>'; return; }
+  const total = c.val || 1, pctOf = v => (v / total * 100);
+  const classes = [
+    {k:'cdt', name:'CDT en pesos', tag:'Tasa fija', color:'var(--blue)', d:c.cdt, has:c.cdt.n > 0},
+    {k:'stock', name:'Acciones y ETF', tag:'En dólares', color:'var(--amber)', d:c.stock, has:c.stock.val > 0 || c.stock.inv > 0},
+    {k:'crypto', name:'Cripto', tag:'En dólares', color:'#c792ea', d:c.crypto, has:c.crypto.val > 0 || c.crypto.inv > 0}
+  ];
+  const annTxt = c.ann == null ? '—' : annF(c.ann);
+  const annSub = c.ann == null ? (c.avgAge < 180 ? 'Disponible cuando lo invertido promedie 6 meses' : 'No se pudo calcular') : 'Pesa cada peso por el tiempo que lleva invertido';
+  const contrib = [
+    ['Intereses de CDT (netos)', c.cdt.pl], ['Precio de acciones y ETF', c.stock.pe], ['Dólar en acciones y ETF', c.stock.fe],
+    ['Precio de cripto', c.crypto.pe], ['Dólar en cripto', c.crypto.fe]
+  ].filter(x => Math.abs(x[1]) >= 1);
+  const maxAbs = Math.max(1, ...contrib.map(x => Math.abs(x[1])));
+  const best = contrib.slice().sort((a, b) => b[1] - a[1])[0], worst = contrib.slice().sort((a, b) => a[1] - b[1])[0];
+  const usdVal = c.eq.valCOP;
+  box.innerHTML = `
+    <div class="sum-hero">
+      <div class="sum-big"><span>Patrimonio hoy</span><b class="num">${copF(c.val)}</b><small class="num">Invertido ${copF(c.inv)}</small></div>
+      <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' sobre lo invertido'}</small></div>
+      <div class="sum-big"><span>Rentabilidad anual</span><b class="${c.ann == null ? '' : (c.ann >= 0 ? 'up' : 'dn')}">${annTxt}</b><small>${esc(annSub)}</small></div>
+    </div>
+    <h4 class="sec-h4">Cómo está repartido tu patrimonio</h4>
+    <div class="alloc" role="img" aria-label="Distribución del patrimonio">${classes.filter(x => x.d.val > 0).map(x => `<i style="width:${pctOf(x.d.val).toFixed(2)}%;background:${x.color}"></i>`).join('')}</div>
+    <div class="alloc-l">${classes.filter(x => x.d.val > 0).map(x => `<span><i style="background:${x.color}"></i>${esc(x.name)} ${pctOf(x.d.val).toFixed(0)}% · <span class="num">${copF(x.d.val)}</span></span>`).join('')}</div>
+    <div class="cdt-grid sum-cards">
+      ${classes.filter(x => x.has).map(x => {
+        const d = x.d, isCdt = x.k === 'cdt';
+        const ann = isCdt ? d.ann : d.ann;
+        const annShow = isCdt ? (ann == null ? '—' : annF(ann)) : (ann == null ? 'Muy reciente' : annF(ann));
+        return `<article class="cdt-card">
+          <div class="c-top"><span class="c-sym" style="color:${x.color}">${esc(x.name)}</span><span class="flag">${esc(x.tag)}</span></div>
+          <div class="c-price num">${copF(d.val)}</div>
+          <div class="cdt-nums">
+            <div><span>Ganancia</span><b class="num ${d.pl >= 0 ? 'up' : 'dn'}">${copS(d.pl)}</b><small>${d.ret == null ? '' : pctF(d.ret) + ' total'}</small></div>
+            <div><span>Anualizada</span><b class="${ann != null && ann < 0 ? 'dn' : ''}">${annShow}</b><small>${isCdt ? 'Tasa neta contratada' : 'Según fechas de compra'}</small></div>
+          </div>
+          ${isCdt ? `<div class="sub">${d.n} CDT · capital <span class="num">${copF(d.inv)}</span></div>` : `<div class="sub">Por precio <span class="num">${copS(d.pe)}</span> · por dólar <span class="num">${copS(d.fe)}</span></div>${d.noDate ? `<div class="sub warnline">${d.noDate} compra(s) sin fecha: no entran en la anualizada</div>` : ''}`}
+          <div class="sub">${pctOf(d.val).toFixed(0)}% de tu patrimonio</div></article>`;
+      }).join('')}
+    </div>
+    ${contrib.length ? `<h4 class="sec-h4">De dónde viene tu ganancia</h4>
+    <div class="contrib">${contrib.map(([lab, v]) => `<div class="ct-row"><span>${esc(lab)}</span><div class="ct-bar"><i class="${v >= 0 ? 'up' : 'dn'}" style="width:${(Math.abs(v) / maxAbs * 100).toFixed(1)}%"></i></div><b class="num ${v >= 0 ? 'up' : 'dn'}">${copS(v)}</b></div>`).join('')}</div>
+    ${best && worst && best !== worst ? `<div class="sub">Lo que más te aporta: <b>${esc(best[0])}</b>${worst[1] < 0 ? ` · Lo que más te resta: <b>${esc(worst[0])}</b>` : ''}.</div>` : ''}` : ''}
+    ${usdVal > 0 ? `<h4 class="sec-h4">Qué tanto depende del dólar</h4>
+    <div class="sum-sens">
+      <div><span>Si el dólar sube $100</span><b class="num up">${copS(c.valUSD * 100)}</b></div>
+      <div><span>Si el dólar baja $100</span><b class="num dn">${copS(-c.valUSD * 100)}</b></div>
+      <div><span>Parte de tu patrimonio en dólares</span><b>${pctOf(usdVal).toFixed(0)}%</b></div>
+    </div>
+    <div class="sub">Solo cambia la parte en dólares (US$ <span class="num">${fmtUSD(c.valUSD)}</span>). Tus CDT no se mueven con el dólar. Prueba escenarios en la pestaña Mis CDT.</div>` : ''}
+    <div class="sub sum-note">La rentabilidad anual se calcula con la fecha y el monto de cada compra y de cada CDT, para que cosas con edades distintas sean comparables. Si hay compras sin fecha o inversiones de menos de 6 meses, la cifra anualizada se oculta o se limita. No incluye ventas, impuestos ni comisiones. No es asesoría financiera.</div>`;
+}
+$('#sumBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-go]'); if (!b) return;
+  document.querySelector(`.vtab[data-view="${b.dataset.go}"]`).click();
+});
+$('#sumHide').onclick = e => {
+  const on = document.body.classList.toggle('hide-amt');
+  e.currentTarget.textContent = on ? 'Mostrar montos' : 'Ocultar montos';
+  e.currentTarget.setAttribute('aria-pressed', on);
+};
+
 /* ---------- ciclo ---------- */
 A.forEach(a => render(a));
 refreshLists();
 async function refreshPrices(){
   await Promise.all([A[0], A[2], A[3], A[4], A[5]].map(loadAsset));
   render(A[1]); // actualiza equivalencia BTC en COP
+  if (!$('#viewSum').hidden) drawSum();
   A.forEach(a => { if ((a.rng || '1D') !== '1D') ensureHist(a, a.rng); });
 }
 async function all(force){
@@ -2160,6 +2347,7 @@ setInterval(() => { if (!document.hidden && !S.btc.ws) loadBTC(); }, 30000);
 setInterval(() => loadCal(false), 15 * 60 * 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) all(false); });
 loadBTC(); refreshPrices(); loadCal(false);
+quotesOnly(); drawSum();
 
 };
 </script>
