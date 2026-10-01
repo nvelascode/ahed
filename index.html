@@ -264,6 +264,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   .ev .t{grid-area:t}.ev .imp{grid-area:i}.ev .n{grid-area:n}.ev .v{grid-area:v;flex-direction:column;gap:2px}
 }
 @media (prefers-reduced-motion:reduce){.flash-up,.flash-dn{animation:none}}
+
 </style>
 </head>
 <body>
@@ -474,7 +475,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
     <p>Pon una contraseña para proteger tus datos. Tus compras, CDT y lista de vigilancia se guardan <b>cifrados</b> en este dispositivo, y Ahed se bloquea sola después de unos minutos sin usarla.</p>
     <p class="sub warnline">Si olvidas la contraseña no hay forma de recuperar los datos. Antes de activarla, descarga un respaldo con el botón Respaldo (en Acciones y ETF o en Cripto).</p>
     <div class="lot-form">
-      <label class="wide">Nueva contraseña (mínimo 10 caracteres)<input id="secNew" type="password" autocomplete="new-password"></label>
+      <label class="wide">Nueva contraseña o PIN (mínimo 6 caracteres)<input id="secNew" type="password" autocomplete="new-password"></label>
       <label class="wide">Repite la contraseña<input id="secNew2" type="password" autocomplete="new-password"></label>
     </div>
     <button class="btn primary" id="secOnBtn">Activar contraseña</button>
@@ -514,7 +515,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 15.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 15.1.
 </p>
 
 <dialog id="dlg">
@@ -2400,7 +2401,7 @@ $('#secLockNow').onclick = lockNow;
 $('#secMin').addEventListener('change', e => { ls.set('ahed_lock_min', e.target.value); say('Se bloqueará tras ' + e.target.value + ' min sin actividad.'); });
 $('#secOnBtn').onclick = async () => {
   const p1 = $('#secNew').value, p2 = $('#secNew2').value;
-  if (p1.length < 10) return say('Usa al menos 10 caracteres. Una frase corta con espacios sirve.');
+  if (p1.length < 6) return say('Usa al menos 6 caracteres. Un PIN de 6 dígitos sirve.');
   if (p1 !== p2) return say('Las contraseñas no coinciden.');
   $('#secOnBtn').disabled = true; say('Cifrando tus datos…');
   try{
@@ -2419,7 +2420,7 @@ $('#secOnBtn').onclick = async () => {
 $('#secChg').onclick = async () => {
   const o = $('#secOld').value, n1 = $('#secChgNew').value, n2 = $('#secChgNew2').value;
   if (!(await verify(o))) return say('La contraseña actual no es correcta.');
-  if (n1.length < 10) return say('La nueva contraseña debe tener al menos 10 caracteres.');
+  if (n1.length < 6) return say('La nueva contraseña debe tener al menos 6 caracteres.');
   if (n1 !== n2) return say('Las contraseñas nuevas no coinciden.');
   say('Cambiando…');
   const salt = rnd(16); KEY = await derive(n1, salt, ITER); rec = {salt:b64(salt), iter:ITER};
