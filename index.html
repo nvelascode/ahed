@@ -173,6 +173,17 @@ dialog:has(#bkText),dialog:has(#impText){max-height:90vh;overflow:auto}
 .lot-d{font-size:12.5px;color:var(--mut)} .lot-d.up{color:var(--up)} .lot-d.dn{color:var(--dn)}
 .lot-b{display:flex;gap:6px;margin-top:4px}
 .cdt-nums small{font-size:11.5px;color:var(--mut)}
+dialog:has(#scReview){max-width:600px;max-height:92vh;overflow:auto}
+.btn.primary{background:#1f4a5e;border-color:#35728f}
+.btn.primary:hover{background:#25607a}
+.wide-btn{display:block;text-align:center;margin-bottom:8px;padding:10px}
+.sc-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.sc-row label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+.sc-row input,.sc-row select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;color:var(--txt);font:inherit;font-size:14px;min-width:0}
+.sc-row .chk{grid-column:1 / -1;flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap;color:var(--txt);font-size:14px}
+.sc-row .chk input{width:18px;height:18px}
+.tag{font-size:11.5px;padding:1px 8px;border:1px solid var(--line);border-radius:99px;color:var(--mut)}
+.tag.warn{color:var(--amber);border-color:rgba(242,184,75,.45)}
 @media (max-width:860px){.tools{grid-template-columns:1fr}}
 @media (max-width:860px){.sk-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
 @media (max-width:860px){.mk{grid-template-columns:1fr;gap:18px}}
@@ -307,7 +318,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
       <h2>Mi portafolio</h2>
       <div class="sub">Agrega cada compra con su fecha y su broker. Ahed calcula solo el costo promedio, el dólar promedio y tu ganancia en pesos, separando lo que viene del precio del activo y lo que viene del dólar. Sirve para compras de hace años, varios brokers y Bitcoin.</div>
     </div>
-    <div class="sk-actions"><button class="btn" id="posAdd">Agregar compra</button><button class="btn" id="posImport">Importar</button><button class="btn" id="posBackup">Respaldo</button></div>
+    <div class="sk-actions"><button class="btn primary" id="posScan">Leer extracto</button><button class="btn" id="posAdd">Agregar compra</button><button class="btn" id="posImport">Importar</button><button class="btn" id="posBackup">Respaldo</button></div>
   </div>
   <div id="posSummary"></div>
   <div id="brokerBar"></div>
@@ -383,6 +394,20 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   <div class="dlg-b"><button class="btn" id="lotCancel">Cancelar</button><button class="btn" id="lotSave">Guardar</button></div>
 </dialog>
 
+<dialog id="dlgScan">
+  <h2>Leer extracto</h2>
+  <p>Sube capturas o el PDF del estado de cuenta de tu broker o exchange. Ahed lee las compras o posiciones, tú las revisas y las guardas. La lectura usa IA y puede equivocarse: compara siempre las cifras con tu extracto.</p>
+  <label class="btn file wide-btn">Elegir fotos o PDF<input type="file" id="scFile" accept="image/*,application/pdf" multiple hidden></label>
+  <div class="sub" id="scFiles"></div>
+  <div class="lot-form">
+    <label>Broker (opcional)<input id="scBroker" list="brokerList" autocomplete="off" placeholder="Si no lo detecta"></label>
+    <label>Código de acceso<input id="scPin" type="password" autocomplete="off" placeholder="El que pusiste en Vercel"></label>
+  </div>
+  <div class="sub" id="scOut" role="status"></div>
+  <div id="scReview"></div>
+  <div class="dlg-b"><button class="btn" id="scCancel">Cerrar</button><button class="btn" id="scRead">Leer</button><button class="btn primary" id="scAdd" hidden>Agregar seleccionadas</button></div>
+</dialog>
+
 <dialog id="dlgImp">
   <h2>Importar compras</h2>
   <p>Pega desde Excel o Google Sheets, una compra por línea, con estas columnas: <code>fecha, símbolo, cantidad, precio en US$, broker, dólar</code>. El broker y el dólar son opcionales; si falta el dólar, lo busco por la fecha. Ejemplo: <code>2021-03-05, BTC, 0.25, 48000, Binance</code>. Sirven fechas como 2021-03-05 o 05/03/2021.</p>
@@ -404,7 +429,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. "Mis acciones": historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 10.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. "Mis acciones": historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 11.
 </p>
 
 <dialog id="dlg">
@@ -1927,6 +1952,118 @@ $('#bkFile').addEventListener('change', e => {
 $('#bkLoadText').onclick = () => { const t = $('#bkText').value.trim(); if (t) $('#bkOut').textContent = restoreFrom(t); };
 
 
+
+/* ---------- Leer extracto con IA ---------- */
+const dlgScan = $('#dlgScan');
+let scFiles = [], scRows = [];
+const readAsDataURL = f => new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(f); });
+async function shrinkImage(f){
+  const url = await readAsDataURL(f);
+  try{
+    const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = url; setTimeout(() => ko(new Error('timeout')), 5000); });
+    const sc = Math.min(1, 1800 / Math.max(img.width, img.height));
+    const c = document.createElement('canvas'); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+    const ctx = c.getContext('2d'); if (!ctx) return url;
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.85);
+  }catch(e){ return url; }
+}
+function scReset(){
+  scFiles = []; scRows = [];
+  $('#scFiles').textContent = ''; $('#scReview').innerHTML = ''; $('#scOut').textContent = '';
+  $('#scRead').hidden = false; $('#scRead').disabled = false; $('#scAdd').hidden = true;
+  try{ $('#scPin').value = localStorage.getItem('ahed_pin') || ''; }catch(e){}
+  refreshLists();
+}
+$('#posScan').onclick = () => { scReset(); dlgScan.showModal(); };
+$('#scCancel').onclick = () => dlgScan.close();
+$('#scFile').addEventListener('change', e => {
+  scFiles = [...e.target.files].slice(0, 6);
+  $('#scFiles').textContent = scFiles.length ? scFiles.map(f => f.name).join(' · ') : '';
+});
+$('#scRead').onclick = async () => {
+  const out = $('#scOut'), pin = $('#scPin').value.trim();
+  if (!scFiles.length) return void (out.textContent = 'Elige al menos una foto o un PDF.');
+  if (!pin) return void (out.textContent = 'Escribe tu código de acceso.');
+  if (!location.protocol.startsWith('http')) return void (out.textContent = 'La lectura con IA solo funciona en la página publicada (ahed.vercel.app).');
+  $('#scRead').disabled = true; $('#scReview').innerHTML = '';
+  try{
+    out.textContent = 'Preparando archivos…';
+    const files = [];
+    for (const f of scFiles){
+      const data = f.type === 'application/pdf' ? await readAsDataURL(f) : await shrinkImage(f);
+      files.push({name:f.name, type:f.type, data});
+    }
+    if (files.reduce((a, f) => a + f.data.length, 0) > 4.2e6){ out.textContent = 'Los archivos pesan demasiado (máximo 4 MB en total). Sube menos páginas o capturas más pequeñas.'; return; }
+    out.textContent = 'Leyendo el extracto… puede tardar hasta 30 segundos.';
+    const r = await fetch('/api/extracto', {method:'POST', headers:{'Content-Type':'application/json', 'x-ahed-code':pin}, body:JSON.stringify({files, broker:$('#scBroker').value.trim()})});
+    const j = await r.json().catch(() => ({error:'Respuesta inválida del servidor.'}));
+    if (!r.ok){ out.textContent = j.error || ('Error ' + r.status); return; }
+    try{ localStorage.setItem('ahed_pin', pin); }catch(e){}
+    scBuild(j);
+  }catch(e){ out.textContent = 'No pude completar la lectura: ' + (e && e.message ? e.message : 'error de conexión'); }
+  finally { $('#scRead').disabled = false; }
+};
+function scBuild(j){
+  const hint = $('#scBroker').value.trim(), broker = hint || j.broker || '';
+  const rows = [];
+  (j.transactions || []).forEach(t => rows.push({kind:'Compra', sell:t.side === 'sell', date:t.date || '', sym:t.symbol, qty:t.quantity, price:t.price, cur:t.currency, broker}));
+  (j.positions || []).forEach(p => rows.push({kind:'Posición', date:'', sym:p.symbol, qty:p.quantity, price:p.avg_cost, cur:p.currency, broker}));
+  rows.forEach(r => {
+    r.tag = '';
+    r.inc = true;
+    if (r.sell){ r.inc = false; r.tag = 'Venta: Ahed aún no registra ventas'; }
+    else if (r.cur !== 'USD' && r.cur !== 'COP'){ r.inc = false; r.tag = 'Moneda ' + r.cur + ' no soportada'; }
+    else if (r.kind === 'Posición' && LOTS.some(l => l.sym === r.sym && (l.broker || '') === (r.broker || ''))){ r.inc = false; r.tag = 'Ya tienes ' + r.sym + ' en este broker: se sumaría'; }
+    else if (!(r.price > 0)){ r.inc = false; r.tag = 'Falta el precio: complétalo'; }
+  });
+  scRows = rows;
+  const out = $('#scOut');
+  if (!rows.length){ $('#scReview').innerHTML = ''; out.textContent = 'No encontré compras ni posiciones en esos archivos.' + (j.notes ? ' ' + j.notes : ''); return; }
+  out.textContent = `Encontré ${rows.length} fila(s). Revisa las cifras contra tu extracto, corrige lo que haga falta y marca lo que quieres guardar.` + (rows.some(r => r.kind === 'Posición') ? ' En las posiciones, pon una fecha aproximada de compra para calcular el efecto del dólar.' : '') + (j.notes ? ' Nota de la lectura: ' + j.notes : '');
+  $('#scReview').innerHTML = rows.map((r, i) => `<div class="sc-row" data-i="${i}">
+      <label class="chk"><input type="checkbox" class="sc-inc" ${r.inc ? 'checked' : ''}><b>${esc(r.sym)}</b><span class="tag">${esc(r.kind)}</span>${r.tag ? `<span class="tag warn">${esc(r.tag)}</span>` : ''}</label>
+      <label>Fecha<input type="date" class="sc-date" value="${esc(parseDate(r.date) || '')}"></label>
+      <label>Símbolo<input class="sc-sym" value="${esc(r.sym)}" autocapitalize="characters"></label>
+      <label>Cantidad<input class="sc-qty" inputmode="decimal" value="${r.qty}"></label>
+      <label>Precio por unidad<input class="sc-price" inputmode="decimal" value="${r.price == null ? '' : r.price}"></label>
+      <label>Moneda<select class="sc-cur"><option value="USD" ${r.cur === 'USD' ? 'selected' : ''}>US$</option><option value="COP" ${r.cur === 'COP' ? 'selected' : ''}>COP</option></select></label>
+      <label>Broker<input class="sc-bro" list="brokerList" value="${esc(r.broker)}"></label></div>`).join('');
+  $('#scAdd').hidden = false;
+}
+$('#scAdd').onclick = async () => {
+  const out = $('#scOut'), picked = [], errs = [];
+  document.querySelectorAll('#scReview .sc-row').forEach((row, i) => {
+    if (!row.querySelector('.sc-inc').checked) return;
+    const q = s => row.querySelector(s).value;
+    const sym = q('.sc-sym').trim().toUpperCase().replace(/^\$/, ''), qty = parseNum(q('.sc-qty')), pr = parseNum(q('.sc-price'));
+    if (!SYM_RE.test(sym) || !(qty > 0) || !(pr > 0)){ errs.push(sym || ('fila ' + (i + 1))); return; }
+    picked.push({sym, qty, pr, cur:q('.sc-cur'), date:parseDate(q('.sc-date')) || '', broker:q('.sc-bro').trim()});
+  });
+  if (errs.length) return void (out.textContent = 'Revisa símbolo, cantidad y precio en: ' + errs.join(', ') + '.');
+  if (!picked.length) return void (out.textContent = 'No marcaste ninguna fila.');
+  $('#scAdd').disabled = true;
+  try{
+    const dates = [...new Set(picked.filter(p => p.date).map(p => p.date))], fxBy = {};
+    for (let i = 0; i < dates.length; i++){
+      out.textContent = `Buscando el dólar de cada fecha… ${i + 1}/${dates.length}`;
+      const r = await trmOn(dates[i]); if (r) fxBy[dates[i]] = Math.round(r.v * 100) / 100;
+    }
+    const lots = [], skipped = [];
+    picked.forEach(p => {
+      const fx = p.date ? (fxBy[p.date] || null) : null;
+      let price = p.pr, cop = null;
+      if (p.cur === 'COP'){ if (!fx){ skipped.push(p.sym + ' (en pesos, necesita fecha para el dólar)'); return; } price = p.pr / fx; cop = p.pr * p.qty; }
+      const dup = LOTS.some(l => l.sym === p.sym && l.date === p.date && Math.abs(l.qty - p.qty) < 1e-9 && (l.broker || '') === p.broker && Math.abs(l.price - price) < 1e-6);
+      if (dup){ skipped.push(p.sym + ' (ya estaba cargada)'); return; }
+      lots.push({id:uid(), sym:p.sym, broker:p.broker, date:p.date, qty:p.qty, price, fx, cop});
+    });
+    if (lots.length){ LOTS = LOTS.concat(lots); afterLotsChange(); }
+    const sinFecha = lots.filter(l => !l.date).length;
+    out.textContent = `Listo: ${lots.length} agregada(s).` + (sinFecha ? ` ${sinFecha} sin fecha: ponles fecha desde Editar para calcular el efecto del dólar.` : '') + (skipped.length ? ' No se agregaron: ' + skipped.join(', ') + '.' : '');
+    if (lots.length){ $('#scReview').innerHTML = ''; $('#scAdd').hidden = true; }
+  } finally { $('#scAdd').disabled = false; }
+};
 
 /* ---------- ciclo ---------- */
 A.forEach(a => render(a));

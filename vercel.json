@@ -1,5 +1,8 @@
 {
   "cleanUrls": true,
+  "functions": {
+    "api/extracto.js": { "maxDuration": 60 }
+  },
   "headers": [
     { "source": "/sw.js", "headers": [
       { "key": "Cache-Control", "value": "no-cache" },
