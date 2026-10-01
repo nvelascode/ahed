@@ -277,7 +277,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
     <button class="btn primary" id="lockGo">Entrar</button>
     <div class="sub warnline" id="lockErr" role="alert"></div>
     <details><summary>¿Olvidaste la contraseña?</summary>
-      <p class="sub">No existe forma de recuperarla: tus datos están cifrados con ella. Puedes borrar los datos de este dispositivo y empezar de nuevo; si tienes un respaldo, lo cargas después desde Portafolio → Respaldo.</p>
+      <p class="sub">No existe forma de recuperarla: tus datos están cifrados con ella. Puedes borrar los datos de este dispositivo y empezar de nuevo; si tienes un respaldo, lo cargas después con el botón Respaldo (en Acciones y ETF o en Cripto).</p>
       <button class="btn" id="lockWipe">Borrar datos de este dispositivo</button></details>
   </div>
 </div>
@@ -298,8 +298,9 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <nav class="views" role="tablist" aria-label="Vistas">
   <button class="vtab" role="tab" aria-selected="true" data-view="sum">Resumen</button>
   <button class="vtab" role="tab" aria-selected="false" data-view="market">Mercado</button>
-  <button class="vtab" role="tab" aria-selected="false" data-view="stocks">Mis acciones</button>
-  <button class="vtab" role="tab" aria-selected="false" data-view="pos">Portafolio</button>
+  <button class="vtab" role="tab" aria-selected="false" data-view="stocks">Radar</button>
+  <button class="vtab" role="tab" aria-selected="false" data-view="eq">Acciones y ETF</button>
+  <button class="vtab" role="tab" aria-selected="false" data-view="cy">Cripto</button>
   <button class="vtab" role="tab" aria-selected="false" data-view="cdt">Mis CDT</button>
 </nav>
 
@@ -368,53 +369,48 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   </details>
 </div>
 
-<div id="viewPos" hidden>
+<div id="viewEq" hidden>
   <div class="sk-head">
     <div>
-      <h2>Mi portafolio</h2>
-      <div class="sub">Agrega cada compra con su fecha y su broker. Ahed calcula solo el costo promedio, el dólar promedio y tu ganancia en pesos, separando lo que viene del precio del activo y lo que viene del dólar. Sirve para compras de hace años, varios brokers y Bitcoin.</div>
+      <h2>Acciones y ETF</h2>
+      <div class="sub">Este grupo, aislado y medido siempre en pesos colombianos. Como tus acciones y ETF valen en dólares, la ganancia en pesos incluye lo que ganas por el precio y lo que ganas o pierdes por el dólar. Agrega cada compra con su fecha y su broker, o lee un extracto.</div>
     </div>
-    <div class="sk-actions"><button class="btn primary" id="posScan">Leer extracto</button><button class="btn" id="posAdd">Agregar compra</button><button class="btn" id="posAddCrypto">Agregar cripto</button><button class="btn" id="posImport">Importar</button><button class="btn" id="posBackup">Respaldo</button></div>
+    <div class="sk-actions"><button class="btn primary" data-act="scan">Leer extracto</button><button class="btn" data-act="add" data-kind="stock">Agregar compra</button><button class="btn" data-act="import">Importar</button><button class="btn" data-act="backup">Respaldo</button></div>
   </div>
-  <div id="posSummary"></div>
-  <div id="brokerBar"></div>
-  <div id="posCards" class="cdt-grid"></div>
+  <div id="eqSummary"></div>
+  <div id="eqBroker"></div>
+  <div id="eqCards" class="cdt-grid"></div>
+</div>
+
+<div id="viewCy" hidden>
+  <div class="sk-head">
+    <div>
+      <h2>Cripto</h2>
+      <div class="sub">Este grupo, aislado y medido siempre en pesos colombianos. Bitcoin, Ethereum y otras monedas, en cualquier exchange o billetera. Agrega cada compra con su fecha, también si la pagaste en pesos.</div>
+    </div>
+    <div class="sk-actions"><button class="btn primary" data-act="scan">Leer extracto</button><button class="btn" data-act="add" data-kind="crypto">Agregar compra</button><button class="btn" data-act="import">Importar</button><button class="btn" data-act="backup">Respaldo</button></div>
+  </div>
+  <div id="cySummary"></div>
+  <div id="cyBroker"></div>
+  <div id="cyCards" class="cdt-grid"></div>
 </div>
 
 <div id="viewCdt" hidden>
   <div class="sk-head">
     <div>
-      <h2>Mis CDT y portafolio en pesos</h2>
-      <div class="sub">Tus CDT rinden en pesos a tasa fija. Tus acciones y ETF valen en dólares, así que su resultado en pesos depende también de la TRM. Aquí todo se mide en COP, separando lo que ganas por el precio del activo y lo que ganas (o pierdes) por el dólar. Carga tus compras en la pestaña Portafolio.</div>
+      <h2>Mis CDT</h2>
+      <div class="sub">Tus CDT como un solo grupo, aislado y en pesos colombianos: tasa fija, sin dólares. Si tienes varios, aquí ves su rentabilidad conjunta y la de cada uno.</div>
     </div>
-    <div class="sk-actions"><span class="pill" id="cdtFx">Dólar —</span><button class="btn" id="cdtEdit">Editar CDT</button></div>
+    </div>
+    <div class="sk-actions"><button class="btn" id="cdtEdit">Editar CDT</button></div>
   </div>
   <div id="cdtSummary"></div>
   <div id="cdtCards" class="cdt-grid"></div>
-  <div class="tools">
-    <section class="tool" id="simBox">
-      <h3>Simulador: ¿qué pasa si cambia el dólar?</h3>
-      <label class="sl">Dólar (COP) <b id="simFxV"></b><input type="range" id="simFx" min="3000" max="5000" step="10" value="4000"></label>
-      <label class="sl">Variación del precio de tus acciones y ETF <b id="simPxV">0%</b><input type="range" id="simPx" min="-40" max="60" step="1" value="0"></label>
-      <div id="simOut"></div>
-    </section>
-    <section class="tool" id="cmpBox">
-      <h3>CDT vs. activos en dólares</h3>
-      <div class="cmp-grid">
-        <label>Monto (COP)<input id="cmpAmt" inputmode="numeric" value="10.000.000"></label>
-        <label>Plazo (días)<input id="cmpDays" type="number" min="1" value="365"></label>
-        <label>Tasa del CDT E.A. (%)<input id="cmpEa" inputmode="decimal" value="10"></label>
-        <label>Retención (%)<input id="cmpRet" inputmode="decimal" value="4"></label>
-        <label class="wide">Rentabilidad esperada del activo en US$ (% anual)<input id="cmpR" inputmode="decimal" value="10"></label>
-      </div>
-      <div id="cmpOut"></div>
-    </section>
-  </div>
   <details class="how">
     <summary>Cómo se calcula</summary>
     <p><b>CDT:</b> los intereses se calculan con la tasa efectiva anual, así: capital × ((1 + tasa)<sup>días/365</sup> − 1). Se muestra neto de la retención en la fuente, que para CDT de personas naturales es del 4% sobre los intereses (puedes cambiarla por CDT). Los intereses a hoy son una estimación devengada; tu banco es la fuente oficial.</p>
-    <p><b>Acciones y ETF en pesos:</b> valor = cantidad × precio en dólares × dólar de hoy. La ganancia se separa en dos: <i>precio</i> (cambio en dólares valorado al dólar de compra) y <i>dólar</i> (cuánto cambió la TRM desde que compraste). Si no cargas el dólar de compra, el efecto del dólar aparece en cero.</p>
-    <p>El comparador y el simulador son escenarios, no predicciones. No incluyen impuestos sobre ganancias, comisiones ni el costo de cambiar pesos a dólares. No es asesoría financiera ni tributaria.</p>
+    <p><b>Rentabilidad anual del grupo:</b> es el promedio de la tasa neta de cada CDT, ponderado por su capital. Los intereses a hoy son los devengados hasta la fecha, no lo que ya te pagó el banco.</p>
+    <p>No incluye impuestos distintos de la retención en la fuente. No es asesoría financiera ni tributaria.</p>
   </details>
 </div>
 
@@ -428,7 +424,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 
 <dialog id="dlgPf">
   <h2>Mi lista de vigilancia</h2>
-  <p>Un símbolo por línea: las acciones, ETF o cripto que quieres ver en el radar (máximo 20). Tus cantidades y compras se manejan en la pestaña Portafolio, y esos activos se agregan solos aquí.</p>
+  <p>Un símbolo por línea: las acciones, ETF o cripto que quieres ver en el radar (máximo 20). Tus cantidades y compras se manejan en las pestañas Acciones y ETF y Cripto, y esos activos se agregan solos aquí.</p>
   <textarea id="pfText" rows="10" spellcheck="false" autocapitalize="characters"></textarea>
   <div class="dlg-b"><button class="btn" id="pfCancel">Cancelar</button><button class="btn" id="pfSave">Guardar</button></div>
 </dialog>
@@ -477,7 +473,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   <h2>Seguridad</h2>
   <div id="secOff">
     <p>Pon una contraseña para proteger tus datos. Tus compras, CDT y lista de vigilancia se guardan <b>cifrados</b> en este dispositivo, y Ahed se bloquea sola después de unos minutos sin usarla.</p>
-    <p class="sub warnline">Si olvidas la contraseña no hay forma de recuperar los datos. Antes de activarla, descarga un respaldo en Portafolio → Respaldo.</p>
+    <p class="sub warnline">Si olvidas la contraseña no hay forma de recuperar los datos. Antes de activarla, descarga un respaldo con el botón Respaldo (en Acciones y ETF o en Cripto).</p>
     <div class="lot-form">
       <label class="wide">Nueva contraseña (mínimo 10 caracteres)<input id="secNew" type="password" autocomplete="new-password"></label>
       <label class="wide">Repite la contraseña<input id="secNew2" type="password" autocomplete="new-password"></label>
@@ -519,7 +515,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. "Mis acciones": historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 13.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 14.
 </p>
 
 <dialog id="dlg">
@@ -1614,7 +1610,7 @@ function calcUpdate(){
 function drawPf(){
   const box = $('#pfSum'); if (!box) return;
   const rows = PF.filter(p => p.sh && W[p.sym] && W[p.sym].ind);
-  if (!rows.length){ box.innerHTML = '<div class="sub">Para ver el valor de tu portafolio, agrega tus compras en la pestaña Portafolio.</div>'; return; }
+  if (!rows.length){ box.innerHTML = '<div class="sub">Para ver el valor de tu portafolio, agrega tus compras en las pestañas Acciones y ETF o Cripto.</div>'; return; }
   let val = 0, day = 0, pl = 0, hasPl = false;
   rows.forEach(p => {
     const w = W[p.sym], px = w.ind.px; val += p.sh * px;
@@ -1661,14 +1657,14 @@ $('#pfSave').onclick = () => {
   if (!PF.some(p => p.sym === selSym)) selSym = null;
   dlgPf.close(); drawStocks(); loadWatch(false);
 };
-const VIEWS = {sum:'#viewSum', market:'#viewMarket', stocks:'#viewStocks', pos:'#viewPos', cdt:'#viewCdt'};
+const VIEWS = {sum:'#viewSum', market:'#viewMarket', stocks:'#viewStocks', eq:'#viewEq', cy:'#viewCy', cdt:'#viewCdt'};
 document.querySelectorAll('.vtab').forEach(b => b.onclick = () => {
   const v = b.dataset.view;
   document.querySelectorAll('.vtab').forEach(x => x.setAttribute('aria-selected', x === b));
   Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = k !== v; });
   if (v === 'stocks'){ if (!watchStarted){ watchStarted = true; drawStocks(); loadWatch(false); } else refreshWatchQuotes(); }
   if (v === 'sum'){ drawSum(); quotesOnly(); }
-  if (v === 'pos'){ drawPos(); quotesOnly(); }
+  if (v === 'eq' || v === 'cy'){ drawPos(); quotesOnly(); }
   if (v === 'cdt'){ drawCdt(); quotesOnly(); }
 });
 setInterval(refreshWatchQuotes, 30000);
@@ -1703,7 +1699,7 @@ function cdtCalc(c, today){
 }
 function equityCalc(){
   const fx = S.usdcop.price;
-  const mkc = () => ({val:0, inv:0, pl:0, pe:0, fe:0, valUSD:0, flows:[], ageNum:0, ageDen:0, valDated:0, noDate:0});
+  const mkc = () => ({val:0, inv:0, pl:0, pe:0, fe:0, valUSD:0, flows:[], ageNum:0, ageDen:0, valDated:0, noDate:0, byBroker:{}});
   const out = {rows:[], valUSD:0, valCOP:0, invCOP:0, plCOP:0, priceEff:0, fxEff:0, noFx:0, noPx:0, byBroker:{}, cls:{stock:mkc(), crypto:mkc()}};
   Object.values(AGG).forEach(a => {
     const px = pxOf(a.sym);
@@ -1715,6 +1711,7 @@ function equityCalc(){
       row.valUSD += g.valUSD; row.valCOP += g.valCOP; row.inv += g.inv; row.pl += g.pl; row.pe += g.pe; row.fe += g.fe;
       if (!l.fx) out.noFx++;
       const b = l.broker || 'Sin broker'; out.byBroker[b] = (out.byBroker[b] || 0) + g.valCOP;
+      cl.byBroker[b] = (cl.byBroker[b] || 0) + g.valCOP;
       cl.val += g.valCOP; cl.inv += g.inv; cl.pl += g.pl; cl.pe += g.pe; cl.fe += g.fe; cl.valUSD += g.valUSD;
       if (l.date){
         const t = Date.parse(l.date + 'T12:00:00Z');
@@ -1728,98 +1725,33 @@ function equityCalc(){
 }
 
 function drawCdt(){
-  const fx = S.usdcop.price, today = bogKey(Date.now());
-  const pill = $('#cdtFx'); if (pill) pill.textContent = fx ? 'Dólar $ ' + fmtCOP(fx) : 'Dólar —';
-  const cs = CDT.map(c => ({c, r:cdtCalc(c, today)}));
-  const eq = equityCalc();
-  const cdtCap = cs.reduce((a, x) => a + x.c.capital, 0), cdtNow = cs.reduce((a, x) => a + x.r.now, 0), cdtPl = cs.reduce((a, x) => a + x.r.netAcc, 0);
-  const patr = cdtNow + eq.valCOP, inv = cdtCap + eq.invCOP, pl = cdtPl + eq.plCOP;
-  const sum = $('#cdtSummary');
-  if (!cs.length && !eq.rows.length){
-    sum.innerHTML = '<div class="empty">Agrega tus CDT con "Editar CDT" y tus acciones, ETF o Bitcoin en la pestaña "Portafolio".</div>';
-  } else {
-    const share = patr > 0 ? cdtNow / patr * 100 : 0;
-    const tile = (lab, val, sub, signed) => `<div class="pf-item"><span>${esc(lab)}</span><b class="${signed ? (val >= 0 ? 'up' : 'dn') : ''}">${signed ? copS(val) : copF(val)}</b>${sub ? `<small>${sub}</small>` : ''}</div>`;
-    const warn = [];
-    if (eq.noFx) warn.push(`${eq.noFx} compra(s) sin dólar de su fecha: el efecto del dólar se muestra en cero`);
-    if (eq.noPx) warn.push(`${eq.noPx} activo(s) sin precio disponible todavía`);
-    sum.innerHTML = `
-      <div class="pfsum big-sum">
-        ${tile('Patrimonio hoy en pesos', patr, `CDT ${copF(cdtNow)} · Activos en dólares ${copF(eq.valCOP)}`)}
-        ${tile('Ganancia total', pl, inv > 0 ? pctF(pl / inv) + ' sobre ' + copF(inv) : '', true)}
-        ${tile('CDT: intereses netos', cdtPl, cs.length ? 'Ya devengados, después de retención' : '', true)}
-        ${tile('Activos en US$ por precio', eq.priceEff, 'Cambio del precio en dólares', true)}
-        ${tile('Activos en US$ por el dólar', eq.fxEff, 'Efecto de la TRM desde tu compra', true)}
-      </div>
-      ${patr > 0 ? `<div class="alloc" role="img" aria-label="Distribución del patrimonio"><i class="a-cdt" style="width:${share.toFixed(1)}%"></i><i class="a-usd" style="width:${(100 - share).toFixed(1)}%"></i></div>
-      <div class="alloc-l"><span><i class="a-cdt"></i>CDT en pesos ${share.toFixed(0)}%</span><span><i class="a-usd"></i>Activos en dólares ${(100 - share).toFixed(0)}%</span>${fx ? `<span>Con cada +$100 en el dólar, tus activos en US$ ${fmtUSD(eq.valUSD)} suman ${copS(eq.valUSD * 100)}</span>` : ''}</div>` : ''}
-      ${warn.length ? `<div class="sub warnline">${warn.map(esc).join(' · ')}</div>` : ''}`;
+  const g = cdtGroup(), sum = $('#cdtSummary');
+  if (!g.n){
+    sum.innerHTML = '<div class="empty">Agrega tus CDT con "Editar CDT": banco, capital, tasa E.A. y fechas. Aquí verás la rentabilidad de todos tus CDT juntos, aislada y en pesos.</div>';
+    $('#cdtCards').innerHTML = ''; return;
   }
-  $('#cdtCards').innerHTML = cs.map(({c, r}) => {
-    const pct = clamp(r.elapsed / r.total * 100, 0, 100), cls = r.status === 'Vencido' ? 'amb' : r.status === 'Vigente' ? 'up' : '';
+  sum.innerHTML = `<div class="sum-hero">
+      <div class="sum-big"><span>Rentabilidad anual neta</span><b class="up">${annF(g.ann)}</b><small>Ponderada por monto, después de retención</small></div>
+      <div class="sum-big"><span>Valor hoy</span><b class="num">${copF(g.now)}</b><small class="num">Capital ${copF(g.cap)}</small></div>
+      <div class="sum-big"><span>Intereses netos a hoy</span><b class="num up">${copS(g.pl)}</b><small>${g.ret == null ? '' : pctF(g.ret) + ' acumulado'}</small></div>
+    </div>
+    <div class="sub">Al vencimiento de todos tus CDT recibirás <b class="num">${copF(g.final)}</b>${g.next ? ` · Próximo vencimiento: <b>${esc(g.next.name)}</b>, ${esc(dateLab(g.next.end))}` : ''}.</div>`;
+  $('#cdtCards').innerHTML = g.cs.map(({c, r}) => {
+    const pct = clamp(r.elapsed / r.total * 100, 0, 100);
     return `<article class="cdt-card">
       <div class="c-top"><span class="c-sym">${esc(c.name || 'CDT')}</span><span class="flag ${r.status === 'Vigente' ? 'good' : r.status === 'Vencido' ? 'warn' : ''}">${esc(r.status)}</span></div>
-      <div class="c-price">${copF(c.capital)}</div>
+      <div class="c-price num">${copF(c.capital)}</div>
       <div class="sub">Tasa ${c.ea.toFixed(2)}% E.A. · neta ${r.netEA.toFixed(2)}% E.A. después de retención de ${(c.ret == null ? 4 : c.ret)}%</div>
       <div class="prog"><i style="width:${pct.toFixed(1)}%"></i></div>
       <div class="c-foot"><span>${esc(dateLab(c.start))}</span><span>${r.status === 'Vigente' ? 'Faltan ' + r.left + ' días' : r.status === 'Vencido' ? 'Venció' : 'Inicia pronto'}</span><span>${esc(dateLab(c.end))}</span></div>
       <div class="cdt-nums">
-        <div><span>Intereses netos a hoy</span><b class="up">${copS(r.netAcc)}</b></div>
-        <div><span>Recibirás al vencimiento</span><b>${copF(r.final)}</b></div>
+        <div><span>Intereses netos a hoy</span><b class="up num">${copS(r.netAcc)}</b></div>
+        <div><span>Recibirás al vencimiento</span><b class="num">${copF(r.final)}</b></div>
       </div></article>`;
   }).join('');
-  if (cs.length === 0) $('#cdtCards').innerHTML = '';
-  initTools(); updateSim(); updateCmp();
 }
 
-/* ---------- simulador y comparador ---------- */
 let toolsInit = false;
-function initTools(){
-  const fx = S.usdcop.price;
-  if (!fx) return;
-  if (!toolsInit){
-    toolsInit = true;
-    const s = $('#simFx'); s.min = Math.round(fx * 0.75 / 10) * 10; s.max = Math.round(fx * 1.3 / 10) * 10; s.step = 10; s.value = Math.round(fx / 10) * 10;
-    const cap = CDT.reduce((a, c) => a + c.capital, 0);
-    $('#cmpAmt').value = Math.round(cap || 10000000).toLocaleString('es-CO');
-    const w = CDT.reduce((a, c) => a + c.capital * c.ea, 0);
-    $('#cmpEa').value = cap ? (w / cap).toFixed(2) : '10';
-  }
-}
-function updateSim(){
-  const fx = S.usdcop.price, out = $('#simOut'); if (!out) return;
-  if (!fx){ out.innerHTML = '<div class="sub">Esperando el precio del dólar…</div>'; return; }
-  const fs = +$('#simFx').value, pc = +$('#simPx').value, today = bogKey(Date.now());
-  $('#simFxV').textContent = copF(fs); $('#simPxV').textContent = (pc > 0 ? '+' : '') + pc + '%';
-  const eq = equityCalc();
-  const cdtFinal = CDT.reduce((a, c) => a + cdtCalc(c, today).final, 0), cdtNow = CDT.reduce((a, c) => a + cdtCalc(c, today).now, 0);
-  const eqScen = eq.valUSD * (1 + pc / 100) * fs;
-  const now = cdtNow + eq.valCOP, scen = cdtFinal + eqScen, d = scen - now;
-  out.innerHTML = `<div class="sim-row"><span>Hoy</span><b>${copF(now)}</b></div>
-    <div class="sim-row"><span>Escenario (CDT al vencimiento)</span><b>${copF(scen)}</b></div>
-    <div class="sim-row"><span>Diferencia</span><b class="${d >= 0 ? 'up' : 'dn'}">${copS(d)}</b></div>
-    <div class="sub">Tus activos en dólares (US$ ${fmtUSD(eq.valUSD)}) pasarían a valer ${copF(eqScen)}. Tus CDT quedan en ${copF(cdtFinal)} sin importar el dólar.</div>`;
-}
-function updateCmp(){
-  const out = $('#cmpOut'); if (!out) return;
-  const fx = S.usdcop.price;
-  const amt = parseFloat(String($('#cmpAmt').value).replace(/[^\d]/g, '')), days = parseFloat($('#cmpDays').value),
-        ea = parseFloat(String($('#cmpEa').value).replace(',', '.')), ret = parseFloat(String($('#cmpRet').value).replace(',', '.')),
-        r = parseFloat(String($('#cmpR').value).replace(',', '.'));
-  if (!fx){ out.innerHTML = '<div class="sub">Esperando el precio del dólar…</div>'; return; }
-  if (![amt, days, ea, ret, r].every(isFinite) || amt <= 0 || days <= 0){ out.innerHTML = '<div class="sub">Completa los campos para comparar.</div>'; return; }
-  const cdtNet = eaFactor(ea, days) * (1 - ret / 100), cdtFinal = amt * (1 + cdtNet);
-  const rTerm = Math.pow(1 + r / 100, days / 365) - 1;
-  const be = fx * (1 + cdtNet) / (1 + rTerm);
-  const rowOf = (lab, f) => { const v = amt * (1 + rTerm) * f / fx, d = v - cdtFinal; return `<tr><td>${lab}</td><td>${copF(f)}</td><td>${copF(v)}</td><td class="${d >= 0 ? 'up' : 'dn'}">${copS(d)}</td></tr>`; };
-  out.innerHTML = `<div class="sim-row"><span>El CDT te devuelve (neto)</span><b>${copF(cdtFinal)}</b></div>
-    <table class="cmp-t"><thead><tr><th>Si el dólar queda en</th><th>Dólar</th><th>Activo en US$ valdría</th><th>vs. CDT</th></tr></thead><tbody>
-      ${rowOf('10% más bajo', fx * 0.9)}${rowOf('Igual que hoy', fx)}${rowOf('10% más alto', fx * 1.1)}</tbody></table>
-    <div class="be"><b>Punto de equilibrio:</b> si el activo rinde ${r}% anual en dólares, el dólar puede bajar hasta ${copF(be)} (${((be / fx - 1) * 100).toFixed(1)}% frente a hoy) y aun así empatas con el CDT. Por debajo de ese nivel, el CDT te gana.</div>
-    <div class="sub">Es un escenario, no una predicción. No incluye impuestos, comisiones ni el costo de cambiar pesos a dólares.</div>`;
-}
-['simFx', 'simPx'].forEach(id => $('#' + id).addEventListener('input', updateSim));
-['cmpAmt', 'cmpDays', 'cmpEa', 'cmpRet', 'cmpR'].forEach(id => $('#' + id).addEventListener('input', updateCmp));
 
 /* ---------- editor de CDT ---------- */
 const dlgCdt = $('#dlgCdt');
@@ -1861,10 +1793,10 @@ async function quotesOnly(){
     try{ w.q = await quoteOf(sym); w.qerr = null; }catch(e){ w.qerr = e.message; }
   }));
   if (!$('#viewCdt').hidden) drawCdt();
-  if (!$('#viewPos').hidden) drawPos();
+  if (!$('#viewEq').hidden || !$('#viewCy').hidden) drawPos();
   if (!$('#viewSum').hidden) drawSum();
 }
-setInterval(() => { if ((!$('#viewCdt').hidden || !$('#viewPos').hidden || !$('#viewSum').hidden) && !document.hidden) quotesOnly(); }, 30000);
+setInterval(() => { if ((!$('#viewEq').hidden || !$('#viewCy').hidden || !$('#viewSum').hidden) && !document.hidden) quotesOnly(); }, 30000);
 setInterval(() => { if (!$('#viewSum').hidden && !document.hidden) drawSum(); }, 15000);
 
 /* ---------- Vista Portafolio ---------- */
@@ -1872,33 +1804,35 @@ const BROKER_COLORS = ['#6cb6ff', '#f2b84b', '#35d6a4', '#c792ea', '#ff8f6b', '#
 const BROKER_HINTS = ['Interactive Brokers', 'Tyba', 'Trii', 'Hapi', 'Binance', 'Bitso', 'Buda', 'Quantfury', 'Billetera propia'];
 const qtyF = v => (+v).toLocaleString('en-US', {maximumFractionDigits:8});
 
-function drawPos(){
-  const box = $('#posSummary'); if (!box) return;
-  const fx = S.usdcop.price, eq = equityCalc();
-  const entries = Object.values(AGG);
+function drawGroup(k){
+  const pre = k === 'stock' ? 'eq' : 'cy', box = $('#' + pre + 'Summary'); if (!box) return;
+  const isC = k === 'crypto';
+  const entries = Object.values(AGG).filter(a => isCrypto(a.sym) === isC);
+  const bBox = $('#' + pre + 'Broker'), cBox = $('#' + pre + 'Cards');
   if (!entries.length){
-    box.innerHTML = '<div class="empty">Aún no tienes compras. Toca "Agregar compra" o "Importar" para cargar tu historial: acciones, ETF y Bitcoin, de cualquier broker.</div>';
-    $('#brokerBar').innerHTML = ''; $('#posCards').innerHTML = ''; return;
+    box.innerHTML = `<div class="empty">Aún no tienes ${isC ? 'cripto' : 'acciones ni ETF'} cargados. Toca "Agregar compra", "Leer extracto" o "Importar" para cargar tu historial, de cualquier broker.</div>`;
+    bBox.innerHTML = ''; cBox.innerHTML = ''; return;
   }
-  const tile = (lab, val, sub, signed) => `<div class="pf-item"><span>${esc(lab)}</span><b class="${signed ? (val >= 0 ? 'up' : 'dn') : ''}">${signed ? copS(val) : copF(val)}</b>${sub ? `<small>${sub}</small>` : ''}</div>`;
+  const c = sumCalc(), g = c[k];
+  if (!c.fx){ box.innerHTML = '<div class="empty">Esperando el precio del dólar para calcular en pesos…</div>'; bBox.innerHTML = ''; cBox.innerHTML = ''; return; }
+  const lotsAll = entries.flatMap(a => a.lots), noFx = lotsAll.filter(l => !l.fx).length;
   const warn = [];
-  if (eq.noFx) warn.push(`${eq.noFx} compra(s) sin dólar de esa fecha: el efecto del dólar se muestra en cero`);
-  if (eq.noPx) warn.push(`${eq.noPx} activo(s) sin precio disponible todavía`);
-  box.innerHTML = `<div class="pfsum big-sum">
-      ${tile('Valor hoy en pesos', eq.valCOP, 'US$ ' + fmtUSD(eq.valUSD))}
-      ${tile('Ganancia total', eq.plCOP, eq.invCOP > 0 ? pctF(eq.plCOP / eq.invCOP) + ' sobre ' + copF(eq.invCOP) : '', true)}
-      ${tile('Por el precio del activo', eq.priceEff, 'Cambio en dólares', true)}
-      ${tile('Por el dólar', eq.fxEff, 'Efecto de la TRM desde cada compra', true)}
-    </div>${warn.length ? `<div class="sub warnline">${warn.map(esc).join(' · ')}</div>` : ''}`;
-
-  const bs = Object.entries(eq.byBroker).sort((a, b) => b[1] - a[1]), tot = bs.reduce((a, x) => a + x[1], 0);
-  $('#brokerBar').innerHTML = tot > 0 ? `<h4 class="sec-h4">Dónde tienes tu plata</h4>
+  if (noFx) warn.push(`${noFx} compra(s) sin dólar de esa fecha: el efecto del dólar se muestra en cero`);
+  if (g.noDate) warn.push(`${g.noDate} compra(s) sin fecha: no entran en la rentabilidad anual`);
+  if (entries.some(a => !pxOf(a.sym))) warn.push('Algún activo aún no tiene precio');
+  box.innerHTML = `<div class="sum-hero">
+      <div class="sum-big"><span>Rentabilidad anual</span><b class="${g.ann == null ? '' : (g.ann >= 0 ? 'up' : 'dn')}">${annF(g.ann)}</b><small>${esc(annNote(g.young, g.flows.length > 0))}</small></div>
+      <div class="sum-big"><span>Valor hoy en pesos</span><b class="num">${copF(g.val)}</b><small class="num">Invertido ${copF(g.inv)} · US$ ${fmtUSD(g.valUSD)}</small></div>
+      <div class="sum-big"><span>Ganancia total</span><b class="num ${g.pl >= 0 ? 'up' : 'dn'}">${copS(g.pl)}</b><small class="num">${g.ret == null ? '' : pctF(g.ret) + ' acumulado'}</small></div>
+    </div>
+    <div class="sum-split"><span>Por el precio del activo <b class="num ${g.pe >= 0 ? 'up' : 'dn'}">${copS(g.pe)}</b></span><span>Por el dólar <b class="num ${g.fe >= 0 ? 'up' : 'dn'}">${copS(g.fe)}</b></span></div>
+    ${warn.length ? `<div class="sub warnline">${warn.map(esc).join(' · ')}</div>` : ''}`;
+  const bs = Object.entries(g.byBroker).sort((a, b) => b[1] - a[1]), tot = bs.reduce((a, x) => a + x[1], 0);
+  bBox.innerHTML = tot > 0 ? `<h4 class="sec-h4">Dónde lo tienes</h4>
     <div class="alloc" role="img" aria-label="Distribución por broker">${bs.map(([b, v], i) => `<i style="width:${(v / tot * 100).toFixed(2)}%;background:${BROKER_COLORS[i % BROKER_COLORS.length]}"></i>`).join('')}</div>
-    <div class="alloc-l">${bs.map(([b, v], i) => `<span><i style="background:${BROKER_COLORS[i % BROKER_COLORS.length]}"></i>${esc(b)} ${(v / tot * 100).toFixed(0)}% · ${copF(v)}</span>`).join('')}</div>` : '';
-
+    <div class="alloc-l">${bs.map(([b, v], i) => `<span><i style="background:${BROKER_COLORS[i % BROKER_COLORS.length]}"></i>${esc(b)} ${(v / tot * 100).toFixed(0)}% · <span class="num">${copF(v)}</span></span>`).join('')}</div>` : '';
   const cards = entries.map(a => ({a, g:posGain(a.sym), px:pxOf(a.sym)})).sort((x, y) => ((y.g ? y.g.valCOP : 0) - (x.g ? x.g.valCOP : 0)));
-  const cardsList = cards.map(({a, g, px}) => {
-    const kind = isCrypto(a.sym) ? 'Cripto' : 'Acción / ETF';
+  cBox.innerHTML = cards.map(({a, g: pg, px}) => {
     const bro = Object.entries(a.brokers).map(([b, q]) => `<span class="flag">${esc(b)} · ${qtyF(q)}</span>`).join('');
     const lots = a.lots.map(l => {
       const x = (px && S.usdcop.price) ? lotGain(l, px, S.usdcop.price) : null;
@@ -1908,21 +1842,20 @@ function drawPos(){
         ${x ? `<div class="lot-d ${x.pl >= 0 ? 'up' : 'dn'}">${copS(x.pl)} <small>(precio ${copS(x.pe)} · dólar ${copS(x.fe)})</small></div>` : ''}
         <div class="lot-b"><button type="button" class="btn sm" data-edit="${esc(l.id)}">Editar</button><button type="button" class="btn sm" data-del="${esc(l.id)}">Borrar</button></div></div>`;
     }).join('');
-    return {c:isCrypto(a.sym), h:`<article class="cdt-card pos-card">
-      <div class="c-top"><span class="c-sym">${esc(a.sym)}</span><span class="flag">${kind}</span></div>
-      <div class="c-price">${g ? copF(g.valCOP) : '—'}</div>
-      <div class="sub">${qtyF(a.sh)} unidades${px ? ' · US$ ' + fmtUSD(px) + ' c/u' : ''}${g ? ' · US$ ' + fmtUSD(g.valUSD) : ''}</div>
-      ${g ? `<div class="cdt-nums"><div><span>Ganancia en pesos</span><b class="${g.pl >= 0 ? 'up' : 'dn'}">${copS(g.pl)}</b><small>${g.inv > 0 ? pctF(g.pl / g.inv) : ''}</small></div>
-        <div><span>Por precio · por dólar</span><b>${copS(g.pe)}</b><b>${copS(g.fe)}</b></div></div>` : ''}
+    return `<article class="cdt-card pos-card">
+      <div class="c-top"><span class="c-sym">${esc(a.sym)}</span><span class="flag">${isC ? 'Cripto' : 'Acción / ETF'}</span></div>
+      <div class="c-price num">${pg ? copF(pg.valCOP) : '—'}</div>
+      <div class="sub">${qtyF(a.sh)} unidades${px ? ' · US$ ' + fmtUSD(px) + ' c/u' : ''}${pg ? ' · US$ ' + fmtUSD(pg.valUSD) : ''}</div>
+      ${pg ? `<div class="cdt-nums"><div><span>Ganancia en pesos</span><b class="num ${pg.pl >= 0 ? 'up' : 'dn'}">${copS(pg.pl)}</b><small>${pg.inv > 0 ? pctF(pg.pl / pg.inv) : ''}</small></div>
+        <div><span>Por precio · por dólar</span><b class="num">${copS(pg.pe)}</b><b class="num">${copS(pg.fe)}</b></div></div>` : ''}
       <div class="sub">Costo promedio US$ ${fmtUSD(a.cost)} · dólar promedio ${a.fx ? '$ ' + fmtCOP(a.fx) : 'sin dato'}</div>
       <div class="flags">${bro}</div>
       <details><summary>Compras (${a.lots.length})</summary><div class="lots">${lots}</div></details>
       <button type="button" class="btn" data-add="${esc(a.sym)}">Agregar compra de ${esc(a.sym)}</button>
-    </article>`};
-  });
-  const grp = (t, arr) => arr.length ? `<h4 class="sec-h4 span-all">${t}</h4>` + arr.map(x => x.h).join('') : '';
-  $('#posCards').innerHTML = grp('Acciones y ETF', cardsList.filter(x => !x.c)) + grp('Cripto', cardsList.filter(x => x.c));
+    </article>`;
+  }).join('');
 }
+function drawPos(){ drawGroup('stock'); drawGroup('crypto'); }
 
 /* ---------- agregar / editar compra ---------- */
 const dlgLot = $('#dlgLot');
@@ -1996,21 +1929,20 @@ $('#lotSave').onclick = async () => {
 };
 function afterLotsChange(){
   saveLots(); syncPF(); savePF();
-  drawPos(); drawStocks(); if (!$('#viewCdt').hidden) drawCdt();
+  drawPos(); drawStocks(); if (!$('#viewCdt').hidden) drawCdt(); if (!$('#viewSum').hidden) drawSum();
   quotesOnly(); if (watchStarted) loadWatch(false);
 }
-$('#posAdd').onclick = () => openLot(null);
-$('#posAddCrypto').onclick = () => openLot(null, '', 'crypto');
-$('#posCards').addEventListener('click', e => {
+const lotClick = e => {
   const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]'), add = e.target.closest('[data-add]');
   if (ed) openLot(LOTS.find(l => l.id === ed.dataset.edit));
   else if (add) openLot(null, add.dataset.add);
   else if (del && confirm('¿Borrar esta compra?')){ LOTS = LOTS.filter(l => l.id !== del.dataset.del); afterLotsChange(); }
-});
+};
+['#eqCards', '#cyCards'].forEach(sel => $(sel).addEventListener('click', lotClick));
 
 /* ---------- importar desde Excel ---------- */
 const dlgImp = $('#dlgImp');
-$('#posImport').onclick = () => { $('#impText').value = ''; $('#impOut').textContent = ''; dlgImp.showModal(); };
+const importOpen = () => { $('#impText').value = ''; $('#impOut').textContent = ''; dlgImp.showModal(); };
 $('#impCancel').onclick = () => dlgImp.close();
 $('#impGo').onclick = async () => {
   const out = $('#impOut'), rows = [], bad = [];
@@ -2042,7 +1974,15 @@ $('#impGo').onclick = async () => {
 /* ---------- respaldo ---------- */
 const dlgBk = $('#dlgBk');
 const backupData = () => ({app:'ahed', version:1, exported:new Date().toISOString(), watch:PF.map(p => p.sym), lots:LOTS, cdt:CDT});
-$('#posBackup').onclick = () => { $('#bkText').value = ''; $('#bkOut').textContent = ''; dlgBk.showModal(); };
+const backupOpen = () => { $('#bkText').value = ''; $('#bkOut').textContent = ''; dlgBk.showModal(); };
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act;
+  if (a === 'add') openLot(null, '', b.dataset.kind);
+  else if (a === 'scan') scanOpen();
+  else if (a === 'import') importOpen();
+  else if (a === 'backup') backupOpen();
+});
 $('#bkClose').onclick = () => dlgBk.close();
 $('#bkDown').onclick = async () => {
   const pw = $('#bkPass').value, data = pw ? await ahedSeal(pw, backupData()) : backupData();
@@ -2105,7 +2045,7 @@ function scReset(){
   try{ $('#scPin').value = vget('ahed_pin') || ''; }catch(e){}
   refreshLists();
 }
-$('#posScan').onclick = () => { scReset(); dlgScan.showModal(); };
+const scanOpen = () => { scReset(); dlgScan.showModal(); };
 $('#scCancel').onclick = () => dlgScan.close();
 $('#scFile').addEventListener('change', e => {
   scFiles = [...e.target.files].slice(0, 6);
@@ -2212,102 +2152,93 @@ function xirr(flows){
   }
   return mid;
 }
-function sumCalc(){
-  const fx = S.usdcop.price, today = bogKey(Date.now()), now = Date.now();
-  const eq = equityCalc();
-  const cs = CDT.map(c => ({c, r:cdtCalc(c, today)}));
-  const cdt = {val:0, inv:0, pl:0, ann:null, n:cs.length};
+function cdtGroup(){
+  const today = bogKey(Date.now()), cs = CDT.map(c => ({c, r:cdtCalc(c, today)}));
+  const g = {n:cs.length, cap:0, now:0, pl:0, final:0, ann:null, ret:null, flows:[], datedVal:0, ageNum:0, ageDen:0, next:null, cs};
   let wNet = 0, wCap = 0;
-  const cdtFlows = []; let cdtDatedVal = 0, cdtAgeNum = 0, cdtAgeDen = 0;
   cs.forEach(({c, r}) => {
-    cdt.val += r.now; cdt.inv += c.capital; cdt.pl += r.netAcc;
+    g.cap += c.capital; g.now += r.now; g.pl += r.netAcc; g.final += r.final;
     if (c.start <= today){
       wNet += c.capital * r.netEA; wCap += c.capital;
-      cdtFlows.push({t:Date.parse(c.start + 'T12:00:00Z'), v:-c.capital}); cdtDatedVal += r.now;
-      cdtAgeNum += c.capital * Math.max(0, daysBetween(c.start, today)); cdtAgeDen += c.capital;
+      g.flows.push({t:Date.parse(c.start + 'T12:00:00Z'), v:-c.capital}); g.datedVal += r.now;
+      g.ageNum += c.capital * Math.max(0, daysBetween(c.start, today)); g.ageDen += c.capital;
     }
+    if (c.end >= today && (!g.next || c.end < g.next.end)) g.next = c;
   });
-  cdt.ann = wCap > 0 ? wNet / wCap / 100 : null;
-  cdt.ret = cdt.inv > 0 ? cdt.pl / cdt.inv : null;
+  g.ann = wCap > 0 ? wNet / wCap / 100 : null;
+  g.ret = g.cap > 0 ? g.pl / g.cap : null;
+  return g;
+}
+function sumCalc(){
+  const fx = S.usdcop.price, now = Date.now();
+  const eq = equityCalc(), cdt = cdtGroup();
   const mk = k => {
-    const c = eq.cls[k], ageDen = c.ageDen;
-    const avgAge = ageDen > 0 ? c.ageNum / ageDen : 0;
+    const c = eq.cls[k], avgAge = c.ageDen > 0 ? c.ageNum / c.ageDen : 0;
     const flows = c.flows.concat(c.valDated > 0 ? [{t:now, v:c.valDated}] : []);
-    return {val:c.val, inv:c.inv, pl:c.pl, pe:c.pe, fe:c.fe, ret:c.inv > 0 ? c.pl / c.inv : null, avgAge, noDate:c.noDate,
-      ann: avgAge >= 180 ? xirr(flows) : null, flows, valUSD:c.valUSD};
+    return {val:c.val, inv:c.inv, pl:c.pl, pe:c.pe, fe:c.fe, valUSD:c.valUSD, byBroker:c.byBroker, noDate:c.noDate,
+      ret:c.inv > 0 ? c.pl / c.inv : null, avgAge, young:avgAge < 180, ann:xirr(flows), flows};
   };
   const stock = mk('stock'), crypto = mk('crypto');
-  const val = cdt.val + stock.val + crypto.val, inv = cdt.inv + stock.inv + crypto.inv, pl = cdt.pl + stock.pl + crypto.pl;
-  const allFlows = cdtFlows.concat(stock.flows.filter(f => f.t < now), crypto.flows.filter(f => f.t < now));
-  const datedVal = cdtDatedVal + (eq.cls.stock.valDated || 0) + (eq.cls.crypto.valDated || 0);
-  const ageDen = cdtAgeDen + eq.cls.stock.ageDen + eq.cls.crypto.ageDen;
-  const avgAge = ageDen > 0 ? (cdtAgeNum + eq.cls.stock.ageNum + eq.cls.crypto.ageNum) / ageDen : 0;
-  const ann = avgAge >= 180 ? xirr(allFlows.concat(datedVal > 0 ? [{t:now, v:datedVal}] : [])) : null;
-  return {fx, eq, cdt, stock, crypto, val, inv, pl, ret:inv > 0 ? pl / inv : null, ann, avgAge, valUSD:eq.valUSD, valCOPusd:eq.valCOP};
+  const val = cdt.now + stock.val + crypto.val, inv = cdt.cap + stock.inv + crypto.inv, pl = cdt.pl + stock.pl + crypto.pl;
+  const allFlows = cdt.flows.concat(stock.flows.filter(f => f.t < now), crypto.flows.filter(f => f.t < now));
+  const datedVal = cdt.datedVal + eq.cls.stock.valDated + eq.cls.crypto.valDated;
+  const ageDen = cdt.ageDen + eq.cls.stock.ageDen + eq.cls.crypto.ageDen;
+  const avgAge = ageDen > 0 ? (cdt.ageNum + eq.cls.stock.ageNum + eq.cls.crypto.ageNum) / ageDen : 0;
+  const ann = xirr(allFlows.concat(datedVal > 0 ? [{t:now, v:datedVal}] : []));
+  return {fx, eq, cdt, stock, crypto, val, inv, pl, ret:inv > 0 ? pl / inv : null, ann, avgAge, young:avgAge < 180, hasDates:allFlows.length > 0};
 }
 const annF = v => v == null ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '% E.A.';
+const annNote = (young, hasDates) => !hasDates ? 'Agrega la fecha de compra para calcularla' : young ? 'Poco tiempo invertido: el número anual exagera, úsalo como referencia' : 'Pesa cada peso por el tiempo que lleva invertido';
 function drawSum(){
   const box = $('#sumBody'); if (!box) return;
   const c = sumCalc();
-  const has = c.cdt.n || c.stock.val || c.crypto.val || Object.keys(AGG).length;
+  const has = c.cdt.n || Object.keys(AGG).length;
   const pill = $('#sumFx'); if (pill) pill.textContent = c.fx ? 'Dólar $ ' + fmtCOP(c.fx) : 'Dólar —';
   if (!has){
     box.innerHTML = `<div class="empty">Aquí verás el resumen de todo lo que tienes: CDT, acciones, ETF y cripto, en pesos. Empieza cargando algo:
-      <div class="sum-cta"><button class="btn primary" data-go="pos">Agregar compras o leer un extracto</button><button class="btn" data-go="cdt">Agregar un CDT</button></div></div>`;
+      <div class="sum-cta"><button class="btn primary" data-go="eq">Agregar acciones o ETF</button><button class="btn" data-go="cy">Agregar cripto</button><button class="btn" data-go="cdt">Agregar un CDT</button></div></div>`;
     return;
   }
-  if (!c.fx){ box.innerHTML = '<div class="empty">Esperando el precio del dólar para calcular en pesos…</div>'; return; }
+  if (!c.fx && Object.keys(AGG).length){ box.innerHTML = '<div class="empty">Esperando el precio del dólar para calcular en pesos…</div>'; return; }
   const total = c.val || 1, pctOf = v => (v / total * 100);
   const classes = [
-    {k:'cdt', name:'CDT en pesos', tag:'Tasa fija', color:'var(--blue)', d:c.cdt, has:c.cdt.n > 0},
-    {k:'stock', name:'Acciones y ETF', tag:'En dólares', color:'var(--amber)', d:c.stock, has:c.stock.val > 0 || c.stock.inv > 0},
-    {k:'crypto', name:'Cripto', tag:'En dólares', color:'#c792ea', d:c.crypto, has:c.crypto.val > 0 || c.crypto.inv > 0}
-  ];
-  const annTxt = c.ann == null ? '—' : annF(c.ann);
-  const annSub = c.ann == null ? (c.avgAge < 180 ? 'Disponible cuando lo invertido promedie 6 meses' : 'No se pudo calcular') : 'Pesa cada peso por el tiempo que lleva invertido';
+    {k:'cdt', name:'CDT', tag:'Pesos, tasa fija', color:'var(--blue)', has:c.cdt.n > 0, val:c.cdt.now, inv:c.cdt.cap, pl:c.cdt.pl, ret:c.cdt.ret, ann:c.cdt.ann, young:false, dated:true},
+    {k:'stock', name:'Acciones y ETF', tag:'Dólares', color:'var(--amber)', has:c.stock.inv > 0, val:c.stock.val, inv:c.stock.inv, pl:c.stock.pl, ret:c.stock.ret, ann:c.stock.ann, young:c.stock.young, dated:c.stock.noDate === 0 || c.stock.avgAge > 0, pe:c.stock.pe, fe:c.stock.fe, noDate:c.stock.noDate},
+    {k:'crypto', name:'Cripto', tag:'Dólares', color:'#c792ea', has:c.crypto.inv > 0, val:c.crypto.val, inv:c.crypto.inv, pl:c.crypto.pl, ret:c.crypto.ret, ann:c.crypto.ann, young:c.crypto.young, dated:c.crypto.noDate === 0 || c.crypto.avgAge > 0, pe:c.crypto.pe, fe:c.crypto.fe, noDate:c.crypto.noDate}
+  ].filter(x => x.has);
   const contrib = [
     ['Intereses de CDT (netos)', c.cdt.pl], ['Precio de acciones y ETF', c.stock.pe], ['Dólar en acciones y ETF', c.stock.fe],
     ['Precio de cripto', c.crypto.pe], ['Dólar en cripto', c.crypto.fe]
   ].filter(x => Math.abs(x[1]) >= 1);
   const maxAbs = Math.max(1, ...contrib.map(x => Math.abs(x[1])));
   const best = contrib.slice().sort((a, b) => b[1] - a[1])[0], worst = contrib.slice().sort((a, b) => a[1] - b[1])[0];
-  const usdVal = c.eq.valCOP;
   box.innerHTML = `
     <div class="sum-hero">
+      <div class="sum-big"><span>Rentabilidad anual (todo junto)</span><b class="${c.ann == null ? '' : (c.ann >= 0 ? 'up' : 'dn')}">${annF(c.ann)}</b><small>${esc(annNote(c.young, c.hasDates))}</small></div>
       <div class="sum-big"><span>Patrimonio hoy</span><b class="num">${copF(c.val)}</b><small class="num">Invertido ${copF(c.inv)}</small></div>
-      <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' sobre lo invertido'}</small></div>
-      <div class="sum-big"><span>Rentabilidad anual</span><b class="${c.ann == null ? '' : (c.ann >= 0 ? 'up' : 'dn')}">${annTxt}</b><small>${esc(annSub)}</small></div>
+      <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' acumulado'}</small></div>
     </div>
-    <h4 class="sec-h4">Cómo está repartido tu patrimonio</h4>
-    <div class="alloc" role="img" aria-label="Distribución del patrimonio">${classes.filter(x => x.d.val > 0).map(x => `<i style="width:${pctOf(x.d.val).toFixed(2)}%;background:${x.color}"></i>`).join('')}</div>
-    <div class="alloc-l">${classes.filter(x => x.d.val > 0).map(x => `<span><i style="background:${x.color}"></i>${esc(x.name)} ${pctOf(x.d.val).toFixed(0)}% · <span class="num">${copF(x.d.val)}</span></span>`).join('')}</div>
+    <h4 class="sec-h4">Cada grupo, aislado y en pesos</h4>
     <div class="cdt-grid sum-cards">
-      ${classes.filter(x => x.has).map(x => {
-        const d = x.d, isCdt = x.k === 'cdt';
-        const ann = isCdt ? d.ann : d.ann;
-        const annShow = isCdt ? (ann == null ? '—' : annF(ann)) : (ann == null ? 'Muy reciente' : annF(ann));
-        return `<article class="cdt-card">
+      ${classes.map(x => `<article class="cdt-card">
           <div class="c-top"><span class="c-sym" style="color:${x.color}">${esc(x.name)}</span><span class="flag">${esc(x.tag)}</span></div>
-          <div class="c-price num">${copF(d.val)}</div>
+          <div class="sum-ann ${x.ann != null && x.ann < 0 ? 'dn' : 'up'}">${annF(x.ann)}</div>
+          <div class="sub">Rentabilidad anual${x.k === 'cdt' ? ' neta' : ''}</div>
           <div class="cdt-nums">
-            <div><span>Ganancia</span><b class="num ${d.pl >= 0 ? 'up' : 'dn'}">${copS(d.pl)}</b><small>${d.ret == null ? '' : pctF(d.ret) + ' total'}</small></div>
-            <div><span>Anualizada</span><b class="${ann != null && ann < 0 ? 'dn' : ''}">${annShow}</b><small>${isCdt ? 'Tasa neta contratada' : 'Según fechas de compra'}</small></div>
+            <div><span>Valor hoy</span><b class="num">${copF(x.val)}</b><small class="num">Invertido ${copF(x.inv)}</small></div>
+            <div><span>Ganancia</span><b class="num ${x.pl >= 0 ? 'up' : 'dn'}">${copS(x.pl)}</b><small>${x.ret == null ? '' : pctF(x.ret) + ' acumulado'}</small></div>
           </div>
-          ${isCdt ? `<div class="sub">${d.n} CDT · capital <span class="num">${copF(d.inv)}</span></div>` : `<div class="sub">Por precio <span class="num">${copS(d.pe)}</span> · por dólar <span class="num">${copS(d.fe)}</span></div>${d.noDate ? `<div class="sub warnline">${d.noDate} compra(s) sin fecha: no entran en la anualizada</div>` : ''}`}
-          <div class="sub">${pctOf(d.val).toFixed(0)}% de tu patrimonio</div></article>`;
-      }).join('')}
+          ${x.k === 'cdt' ? '' : `<div class="sub">Por precio <span class="num">${copS(x.pe)}</span> · por dólar <span class="num">${copS(x.fe)}</span></div>`}
+          ${x.young ? '<div class="sub warnline">Poco tiempo invertido: el número anual exagera, úsalo como referencia.</div>' : ''}
+          ${x.noDate ? `<div class="sub warnline">${x.noDate} compra(s) sin fecha: no entran en la anualizada.</div>` : ''}
+          <div class="sub">${pctOf(x.val).toFixed(0)}% de tu patrimonio</div></article>`).join('')}
     </div>
+    <div class="alloc" role="img" aria-label="Distribución del patrimonio">${classes.filter(x => x.val > 0).map(x => `<i style="width:${pctOf(x.val).toFixed(2)}%;background:${x.color}"></i>`).join('')}</div>
+    <div class="alloc-l">${classes.filter(x => x.val > 0).map(x => `<span><i style="background:${x.color}"></i>${esc(x.name)} ${pctOf(x.val).toFixed(0)}% · <span class="num">${copF(x.val)}</span></span>`).join('')}</div>
     ${contrib.length ? `<h4 class="sec-h4">De dónde viene tu ganancia</h4>
     <div class="contrib">${contrib.map(([lab, v]) => `<div class="ct-row"><span>${esc(lab)}</span><div class="ct-bar"><i class="${v >= 0 ? 'up' : 'dn'}" style="width:${(Math.abs(v) / maxAbs * 100).toFixed(1)}%"></i></div><b class="num ${v >= 0 ? 'up' : 'dn'}">${copS(v)}</b></div>`).join('')}</div>
     ${best && worst && best !== worst ? `<div class="sub">Lo que más te aporta: <b>${esc(best[0])}</b>${worst[1] < 0 ? ` · Lo que más te resta: <b>${esc(worst[0])}</b>` : ''}.</div>` : ''}` : ''}
-    ${usdVal > 0 ? `<h4 class="sec-h4">Qué tanto depende del dólar</h4>
-    <div class="sum-sens">
-      <div><span>Si el dólar sube $100</span><b class="num up">${copS(c.valUSD * 100)}</b></div>
-      <div><span>Si el dólar baja $100</span><b class="num dn">${copS(-c.valUSD * 100)}</b></div>
-      <div><span>Parte de tu patrimonio en dólares</span><b>${pctOf(usdVal).toFixed(0)}%</b></div>
-    </div>
-    <div class="sub">Solo cambia la parte en dólares (US$ <span class="num">${fmtUSD(c.valUSD)}</span>). Tus CDT no se mueven con el dólar. Prueba escenarios en la pestaña Mis CDT.</div>` : ''}
-    <div class="sub sum-note">La rentabilidad anual se calcula con la fecha y el monto de cada compra y de cada CDT, para que cosas con edades distintas sean comparables. Si hay compras sin fecha o inversiones de menos de 6 meses, la cifra anualizada se oculta o se limita. No incluye ventas, impuestos ni comisiones. No es asesoría financiera.</div>`;
+    <div class="sub sum-note">La rentabilidad anual se calcula con la fecha y el monto de cada compra y de cada CDT, para que cosas con edades distintas sean comparables. Cuando algo lleva menos de 6 meses, el número anual es una proyección de un periodo corto y puede ser extremo; úsalo solo como referencia. No incluye ventas, impuestos ni comisiones. No es asesoría financiera.</div>`;
 }
 $('#sumBody').addEventListener('click', e => {
   const b = e.target.closest('[data-go]'); if (!b) return;
