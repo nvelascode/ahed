@@ -1,5 +1,5 @@
 // Ahed · service worker: red primero, caché como respaldo sin conexión
-const V = 'ahed-v3';
+const V = 'ahed-v4';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
