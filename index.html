@@ -75,8 +75,8 @@ h1{font-family:'IBM Plex Sans Condensed',sans-serif;font-weight:600;font-size:22
 .mk .row span:last-child{text-align:right;white-space:nowrap}
 .mk .sub{font-size:12.5px;color:var(--mut);margin-top:8px;line-height:1.5}
 [hidden]{display:none !important}
-.views{display:flex;gap:6px;margin:12px 0 4px}
-.vtab{padding:8px 16px;border:1px solid var(--line);border-radius:99px;background:transparent;color:var(--mut);font-size:14px}
+.views{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px;max-width:100%}
+.vtab{padding:8px 14px;border:1px solid var(--line);border-radius:99px;background:transparent;color:var(--mut);font-size:14px;white-space:nowrap}
 .vtab[aria-selected=true]{background:var(--panel2);color:var(--txt);border-color:#35506b}
 .rng{display:flex;gap:4px;margin-top:2px}
 .rng button{flex:1;background:transparent;border:1px solid var(--line);border-radius:6px;padding:2px 0;font-size:11.5px;color:var(--mut)}
@@ -86,7 +86,11 @@ dialog textarea{width:100%;background:var(--bg);border:1px solid var(--line);bor
 dialog code{background:var(--bg);padding:1px 5px;border-radius:4px}
 .sk-head{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:space-between;align-items:flex-start;margin:14px 0 12px}
 .sk-head .sub{max-width:640px;margin-top:6px;font-size:13px;color:var(--mut);line-height:1.5}
-.sk-actions{display:flex;gap:8px;align-items:center}
+.sk-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pfsum:empty{display:none}
+.rd-add{display:flex;gap:8px;margin:0 0 10px}
+.rd-add input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--txt);font:inherit;font-size:14px;text-transform:uppercase}
+.rd-add input::placeholder{text-transform:none}
 .pfsum{display:flex;flex-wrap:wrap;gap:10px 28px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;margin-bottom:14px}
 .pf-item{display:flex;flex-direction:column;gap:2px}
 .pf-item span{font-size:12px;color:var(--mut)} .pf-item b{font-size:20px;font-weight:600} .pf-item small{font-size:12px;color:var(--mut)}
@@ -123,6 +127,7 @@ dialog code{background:var(--bg);padding:1px 5px;border-radius:4px}
 .fact small{font-size:11.5px;color:var(--mut)}
 .calc label{font-size:13.5px} .calc input{width:120px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;color:var(--txt);font:inherit;margin-left:4px}
 .calc .sub{margin-top:8px}
+.rd-rm{margin-top:16px}
 .how{margin:16px 0 4px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
 .how summary{cursor:pointer;font-size:14px}
 .how p{font-size:13px;color:var(--mut);line-height:1.6;margin-top:10px}
@@ -157,6 +162,8 @@ h1.brand img{border-radius:8px}
 .cdt-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0;border-top:1px solid var(--line)} .cdt-row:first-child{border-top:0} .cdt-row .cx{grid-column:1 / -1;justify-self:end}
 dialog:has(#cdtRows){max-width:560px;max-height:90vh;overflow:auto}
 select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--txt);font:inherit;font-size:14px}
+dialog label select,.lot-form select,.sc-row select{width:100%}
+.bro-new{margin-top:6px}
 .lot-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .lot-form label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
 .lot-form input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--txt);font:inherit;font-size:14px;min-width:0}
@@ -198,7 +205,9 @@ html.locked body > *:not(#lockScreen):not(script){visibility:hidden}
 dialog:has(#secOff){max-width:520px;max-height:92vh;overflow:auto}
 #viewSum,#viewMarket,#viewStocks,#viewPos,#viewCdt{margin-bottom:6px}
 .span-all{grid-column:1 / -1}
-.sum-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.sum-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:18px}
+.sum-real{font-size:13.5px;color:var(--mut)} .sum-real b{font-weight:600}
+.infl-row{margin-top:10px} .infl-row input{width:70px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 6px;color:var(--txt);font:inherit;font-size:13px}
 .sum-big{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
 .sum-big span{font-size:12.5px;color:var(--mut)} .sum-big b{font-size:30px;font-weight:600;letter-spacing:-.4px;line-height:1.15} .sum-big small{font-size:12px;color:var(--mut)}
 .sum-cards{margin-top:14px}
@@ -211,7 +220,10 @@ dialog:has(#secOff){max-width:520px;max-height:92vh;overflow:auto}
 .sum-note{margin-top:18px}
 .sum-cta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .hide-amt .num{filter:blur(9px);user-select:none}
-@media (max-width:860px){.sum-hero,.sum-sens{grid-template-columns:1fr}.ct-row{grid-template-columns:1fr auto;gap:6px}.ct-bar{grid-column:1 / -1;order:3}}
+.sum-split{display:flex;flex-wrap:wrap;gap:6px 24px;font-size:14px;color:var(--mut);margin:-6px 0 12px}
+.sum-split b{margin-left:6px;font-weight:600}
+.sum-ann{font-size:26px;font-weight:600;letter-spacing:-.4px;line-height:1.1}
+@media (max-width:860px){.sum-sens{grid-template-columns:1fr}.ct-row{grid-template-columns:1fr auto;gap:6px}.ct-bar{grid-column:1 / -1;order:3}}
 @media (max-width:860px){.tools{grid-template-columns:1fr}}
 @media (max-width:860px){.sk-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
 @media (max-width:860px){.mk{grid-template-columns:1fr;gap:18px}}
@@ -314,6 +326,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
     <div class="sk-actions"><span class="pill" id="sumFx">Dólar —</span><button class="btn" id="sumHide" aria-pressed="false">Ocultar montos</button></div>
   </div>
   <div id="sumBody"></div>
+  <div class="sub infl-row">Inflación: IPC del DANE hasta agosto de 2026 (6,24% anual). Para los meses que el DANE aún no publica, asumo <input id="inflFwd" type="number" step="0.1" min="-5" max="100" inputmode="decimal" aria-label="Inflación anual asumida"> % anual.</div>
 </div>
 
 <div id="viewMarket" hidden>
@@ -355,10 +368,13 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
       <h2>Radar de oportunidades</h2>
       <div class="sub">Cada burbuja es una de tus acciones. Más a la derecha: más lejos de su máximo del año. Más abajo: más sobrevendida. Color: índice de oportunidad (gris bajo, amarillo medio, verde alto). Toca una burbuja para ver el detalle.</div>
     </div>
-    <div class="sk-actions"><span class="pill" id="skStatus">—</span><button class="btn" id="skEdit">Editar lista</button></div>
+    <div class="sk-actions"><span class="pill" id="skStatus">—</span><button class="btn" id="skEdit">Editar lista</button><button class="btn" id="rdClear">Vaciar</button></div>
   </div>
+  <div class="rd-add"><input id="rdSym" placeholder="Símbolo: META, VOO, BTC…" autocapitalize="characters" autocomplete="off" aria-label="Símbolo para agregar al radar"><button class="btn primary" id="rdAddBtn">Agregar al radar</button></div>
+  <div class="sub warnline" id="rdErr" role="alert"></div>
+  <div id="rdEmpty" class="empty" hidden>Tu radar está vacío. Escribe arriba el símbolo de una acción, ETF o cripto que quieras vigilar (por ejemplo META o VOO) y toca "Agregar al radar".</div>
   <div id="pfSum" class="pfsum"></div>
-  <div class="sk-grid">
+  <div class="sk-grid" id="rdGrid">
     <div class="radar-wrap"><svg id="radar" viewBox="0 0 640 380" width="100%" role="group" aria-label="Radar de oportunidades"></svg>
       <div class="scale"><span>Índice bajo</span><i></i><span>Alto</span></div></div>
     <div id="skDetail" class="detail"></div>
@@ -424,7 +440,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 
 <dialog id="dlgPf">
   <h2>Mi lista de vigilancia</h2>
-  <p>Un símbolo por línea: las acciones, ETF o cripto que quieres ver en el radar (máximo 20). Tus cantidades y compras se manejan en las pestañas Acciones y ETF y Cripto, y esos activos se agregan solos aquí.</p>
+  <p>Un símbolo por línea: las acciones, ETF o cripto que quieres vigilar en el radar (máximo 20). Si borras todo y guardas, el radar queda vacío. Tus compras se manejan en las pestañas Acciones y ETF y Cripto.</p>
   <textarea id="pfText" rows="10" spellcheck="false" autocapitalize="characters"></textarea>
   <div class="dlg-b"><button class="btn" id="pfCancel">Cancelar</button><button class="btn" id="pfSave">Guardar</button></div>
 </dialog>
@@ -434,14 +450,14 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   <div class="lot-form">
     <label class="wide">Tipo de activo<select id="lotKind"><option value="stock">Acción o ETF</option><option value="crypto">Cripto (Bitcoin, Ethereum…)</option></select></label>
     <label>Activo<input id="lotSym" list="symList" autocapitalize="characters" autocomplete="off" placeholder="META, VOO, BTC…"></label>
-    <label>Broker o lugar<input id="lotBroker" list="brokerList" autocomplete="off" placeholder="Interactive Brokers, Binance…"></label>
+    <label>Broker o lugar<select id="lotBroker" class="bro-sel"></select><input id="lotBrokerNew" class="bro-new" hidden placeholder="Escribe el nombre del broker o lugar" autocomplete="off"></label>
     <label>Fecha de compra<input id="lotDate" type="date"></label>
     <label>Cantidad<input id="lotQty" inputmode="decimal" placeholder="10 o 0,25"></label>
     <label>Pagaste en<select id="lotCur"><option value="USD">Dólares (US$)</option><option value="COP">Pesos (COP)</option></select></label>
     <label id="lotPriceL">Precio por unidad (US$)<input id="lotPrice" inputmode="decimal"></label>
     <label class="wide">Dólar (TRM) de ese día<input id="lotFx" inputmode="decimal" placeholder="Se completa solo con la fecha"></label>
   </div>
-  <datalist id="symList"></datalist><datalist id="brokerList"></datalist>
+  <datalist id="symList"></datalist>
   <div class="sub" id="lotNote" role="status"></div>
   <div class="sub warnline" id="lotErr" role="alert"></div>
   <div class="dlg-b"><button class="btn" id="lotCancel">Cancelar</button><button class="btn" id="lotSave">Guardar</button></div>
@@ -453,7 +469,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   <label class="btn file wide-btn">Elegir fotos o PDF<input type="file" id="scFile" accept="image/*,application/pdf" multiple hidden></label>
   <div class="sub" id="scFiles"></div>
   <div class="lot-form">
-    <label>Broker (opcional)<input id="scBroker" list="brokerList" autocomplete="off" placeholder="Si no lo detecta"></label>
+    <label>Broker (opcional)<select id="scBroker" class="bro-sel"></select><input id="scBrokerNew" class="bro-new" hidden placeholder="Escribe el nombre del broker" autocomplete="off"></label>
     <label>Código de acceso<input id="scPin" type="password" autocomplete="off" placeholder="El que pusiste en Vercel"></label>
   </div>
   <div class="sub" id="scOut" role="status"></div>
@@ -515,7 +531,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 15.1.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 15.4.
 </p>
 
 <dialog id="dlg">
@@ -1212,8 +1228,7 @@ function loadPF(){
   let syms = null;
   try{ const j = JSON.parse(vget(WATCH_KEY) || 'null'); if (Array.isArray(j) && j.length) syms = j; }catch(e){}
   if (!syms){ try{ const o = JSON.parse(vget('pf_v1') || 'null'); if (Array.isArray(o) && o.length) syms = o.map(p => p.sym); }catch(e){} }
-  if (!syms) syms = ['META','GOOGL','AMZN','AAPL','MSTR','RIOT'];
-  LOTS.forEach(l => { if (!syms.includes(l.sym)) syms.push(l.sym); });
+  if (!syms) syms = [];
   return syms.slice(0, 20).map(sym => ({sym, sh:null, cost:null, fx:null}));
 }
 let PF = loadPF();
@@ -1234,7 +1249,6 @@ function aggLots(){
 }
 function syncPF(){
   AGG = aggLots();
-  Object.keys(AGG).forEach(sym => { if (!PF.some(p => p.sym === sym) && PF.length < 20) PF.push({sym, sh:null, cost:null, fx:null}); });
   PF.forEach(p => { const a = AGG[p.sym]; p.sh = a ? a.sh : null; p.cost = a ? a.cost : null; p.fx = a ? a.fx : null; });
 }
 syncPF();
@@ -1259,11 +1273,28 @@ async function binQuote(sym){
   if (!d || !d.lastPrice) throw new Error('sin datos');
   return {c:+d.lastPrice, pc:+d.prevClosePrice, dp:+d.priceChangePercent, d:+d.priceChange, h:+d.highPrice, l:+d.lowPrice, t:Math.floor(Date.now() / 1000)};
 }
+async function tdQuote(sym){
+  const q = await tdGet(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(key('k_td'))}`);
+  if (q.status === 'error' || q.code){ if (q.code === 429) tdCool = Date.now() + 65000; throw new Error(q.message || 'error'); }
+  const c = num(q.close);
+  if (!c) throw new Error('sin datos');
+  return {c, pc:num(q.previous_close), dp:num(q.percent_change), d:num(q.change), h:num(q.high), l:num(q.low), t:Math.floor(Date.now() / 1000)};
+}
+const tdQ = {};   // cotizaciones de Twelve Data guardadas 10 minutos para no gastar la cuota gratuita
 async function quoteOf(sym){
   if (isCrypto(sym)) return binQuote(sym);
   try{ return await fhQuote(sym); }
   catch(e){
+    // Finnhub gratis no da algunos ETF (como VOO): se usa el precio que ya carga la pestaña Mercado
+    const m = A.find(x => x.sym === sym && x.stock && S[x.id].price);
+    if (m){ const s0 = S[m.id]; return {c:s0.price, pc:s0.prev, dp:s0.pct, d:(s0.prev != null ? s0.price - s0.prev : null), h:s0.hi, l:s0.lo, t:Math.floor((s0.t || Date.now()) / 1000)}; }
     if (/^[A-Z0-9]{2,10}$/.test(sym)){ try{ const q = await binQuote(sym); CRYPTO.add(sym); return q; }catch(e2){} }
+    if (key('k_td')){
+      const c = tdQ[sym];
+      if (c && Date.now() - c.at < 600000) return c.q;
+      try{ const q = await tdQuote(sym); tdQ[sym] = {at:Date.now(), q}; return q; }
+      catch(e3){ if (c) return c.q; }
+    }
     throw e;
   }
 }
@@ -1471,7 +1502,7 @@ function drawRadar(){
       <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${rad.toFixed(1)}" fill="${col.css}" fill-opacity=".92" stroke="${sel ? '#fff' : 'rgba(0,0,0,.35)'}" stroke-width="${sel ? 2.5 : 1}"/>
       <text x="${cx.toFixed(1)}" y="${(cy + 3.5).toFixed(1)}" text-anchor="middle" font-size="${p.sym.length > 4 ? 9.5 : 11}" font-weight="600" fill="${col.dark ? '#0b1118' : '#e8eef5'}" style="pointer-events:none">${esc(p.sym)}</text></g>`;
   });
-  if (!items.length) g += `<text x="${Wd / 2}" y="${Ht / 2}" text-anchor="middle" fill="var(--mut)" font-size="14">Cargando datos…</text>`;
+  if (!items.length && PF.length) g += `<text x="${Wd / 2}" y="${Ht / 2}" text-anchor="middle" fill="var(--mut)" font-size="14">Cargando datos…</text>`;
   svg.innerHTML = g;
 }
 
@@ -1542,9 +1573,10 @@ function drawDetail(){
     selSym = best ? best.p.sym : (PF[0] && PF[0].sym);
   }
   const p = PF.find(x => x.sym === selSym), w = W[selSym];
-  if (!p){ box.innerHTML = '<div class="empty">Agrega acciones con "Editar acciones".</div>'; return; }
+  if (!p){ box.innerHTML = '<div class="empty">Agrega un símbolo arriba para empezar.</div>'; return; }
   if (!w || !w.ind){
-    box.innerHTML = `<h3 class="d-sym">${esc(p.sym)}</h3><div class="empty">${w && w.err ? 'No se pudo cargar el historial de ' + esc(p.sym) + ': ' + esc(w.err) : 'Cargando datos…'}</div>`;
+    box.innerHTML = `<h3 class="d-sym">${esc(p.sym)}</h3><div class="empty">${w && w.err ? 'No se pudo cargar el historial de ' + esc(p.sym) + ': ' + esc(w.err) + '. Revisa que el símbolo esté bien escrito.' : 'Cargando datos…'}</div>
+      <div class="rd-rm"><button class="btn sm" data-rm="${esc(p.sym)}">Quitar ${esc(p.sym)} del radar</button></div>`;
     return;
   }
   const ind = w.ind, q = w.q || {}, col = scoreColor(ind.score), m = w.m || {};
@@ -1589,7 +1621,8 @@ function drawDetail(){
     <h4>Datos clave</h4>
     <div class="facts">${facts}${pos}</div>
     <h4>Calculadora de promedio</h4>
-    <div class="calc"><label>Si compro US$ <input id="calcAmt" type="number" min="0" step="100" inputmode="decimal" placeholder="1000"></label><div id="calcOut" class="sub"></div></div>`;
+    <div class="calc"><label>Si compro US$ <input id="calcAmt" type="number" min="0" step="100" inputmode="decimal" placeholder="1000"></label><div id="calcOut" class="sub"></div></div>
+    <div class="rd-rm"><button class="btn sm" data-rm="${esc(p.sym)}">Quitar ${esc(p.sym)} del radar</button></div>`;
   if (ch) bindHover(ch, ser.pts);
   const ca = $('#calcAmt'); if (ca && prevAmt){ ca.value = prevAmt; calcUpdate(); }
 }
@@ -1602,7 +1635,7 @@ function calcUpdate(){
   if (p.sh && p.cost){
     const tot = p.sh + nsh, avg = (p.sh * p.cost + amt) / tot;
     t += ` Pasarías a ${fmtUSD(tot)} acciones con costo promedio de $ ${fmtUSD(avg)} (antes $ ${fmtUSD(p.cost)}). Estarías en ${pctF(px / avg - 1)} con el precio actual.`;
-  } else t += ' Agrega tu cantidad y costo promedio en "Editar acciones" para ver el nuevo promedio.';
+  } else t += ' Agrega tus compras en la pestaña Acciones y ETF para ver el nuevo promedio.';
   out.textContent = t;
 }
 
@@ -1610,7 +1643,7 @@ function calcUpdate(){
 function drawPf(){
   const box = $('#pfSum'); if (!box) return;
   const rows = PF.filter(p => p.sh && W[p.sym] && W[p.sym].ind);
-  if (!rows.length){ box.innerHTML = '<div class="sub">Para ver el valor de tu portafolio, agrega tus compras en las pestañas Acciones y ETF o Cripto.</div>'; return; }
+  if (!rows.length){ box.innerHTML = ''; return; }
   let val = 0, day = 0, pl = 0, hasPl = false;
   rows.forEach(p => {
     const w = W[p.sym], px = w.ind.px; val += p.sh * px;
@@ -1622,7 +1655,31 @@ function drawPf(){
     <div class="pf-item"><span>Hoy</span><b class="${day >= 0 ? 'up' : 'dn'}">${sg(day)}</b></div>
     ${hasPl ? `<div class="pf-item"><span>Ganancia total</span><b class="${pl >= 0 ? 'up' : 'dn'}">${sg(pl)}</b></div>` : ''}`;
 }
-function drawStocks(){ drawRadar(); drawPf(); drawDetail(); }
+function drawStocks(){
+  const empty = PF.length === 0;
+  $('#rdEmpty').hidden = !empty; $('#rdGrid').hidden = empty; $('#pfSum').hidden = empty;
+  skStatus(empty ? '—' : ($('#skStatus').textContent === '—' ? 'Listo' : $('#skStatus').textContent));
+  drawRadar(); drawPf(); drawDetail();
+}
+function addToRadar(raw){
+  const err = $('#rdErr'); err.textContent = '';
+  const sym = String(raw || '').trim().toUpperCase().replace(/^\$/, '');
+  if (!SYM_RE.test(sym)){ err.textContent = 'Escribe un símbolo válido, por ejemplo META, VOO o BTC.'; return; }
+  if (PF.some(p => p.sym === sym)){ err.textContent = sym + ' ya está en tu radar.'; return; }
+  if (PF.length >= 20){ err.textContent = 'El radar admite hasta 20 símbolos. Quita alguno primero.'; return; }
+  PF.push({sym, sh:null, cost:null, fx:null});
+  syncPF(); savePF(); selSym = sym; $('#rdSym').value = '';
+  drawStocks(); watchStarted = true; loadWatch(false);
+}
+$('#rdAddBtn').onclick = () => addToRadar($('#rdSym').value);
+$('#rdSym').addEventListener('keydown', e => { if (e.key === 'Enter') addToRadar($('#rdSym').value); });
+$('#rdClear').onclick = () => {
+  if (!PF.length) return;
+  if (!confirm('¿Vaciar el radar? Tus compras no se borran, solo la lista de símbolos que vigilas.')) return;
+  PF = []; savePF(); selSym = null;
+  Object.keys(W).forEach(k => { if (!AGG[k]) delete W[k]; });
+  drawStocks();
+};
 
 /* ---------- eventos ---------- */
 const radarPick = e => {
@@ -1632,6 +1689,8 @@ const radarPick = e => {
 };
 ['pointerdown', 'keydown'].forEach(t => $('#radar').addEventListener(t, radarPick));
 $('#skDetail').addEventListener('click', e => {
+  const rm = e.target.closest('[data-rm]');
+  if (rm){ PF = PF.filter(p => p.sym !== rm.dataset.rm); savePF(); selSym = null; if (!AGG[rm.dataset.rm]) delete W[rm.dataset.rm]; drawStocks(); return; }
   const b = e.target.closest('[data-drng]'); if (!b) return;
   detRange = b.dataset.drng;
   if ((detRange === '1S' || detRange === '5A') && selSym) ensureWHist(selSym, detRange);
@@ -1649,8 +1708,6 @@ $('#pfSave').onclick = () => {
     if (!SYM_RE.test(sym) || seen.has(sym)) return;
     seen.add(sym); out.push(sym);
   });
-  Object.keys(AGG).forEach(sy => { if (!seen.has(sy)){ seen.add(sy); out.push(sy); } });
-  if (!out.length){ dlgPf.close(); return; }
   PF = out.slice(0, 20).map(sym => ({sym, sh:null, cost:null, fx:null}));
   syncPF(); savePF();
   Object.keys(W).forEach(k => { if (!PF.some(p => p.sym === k) && !AGG[k]) delete W[k]; });
@@ -1699,7 +1756,7 @@ function cdtCalc(c, today){
 }
 function equityCalc(){
   const fx = S.usdcop.price;
-  const mkc = () => ({val:0, inv:0, pl:0, pe:0, fe:0, valUSD:0, flows:[], ageNum:0, ageDen:0, valDated:0, noDate:0, byBroker:{}});
+  const mkc = () => ({val:0, inv:0, pl:0, pe:0, fe:0, valUSD:0, flows:[], ageNum:0, ageDen:0, valDated:0, noDate:0, undatedInv:0, byBroker:{}});
   const out = {rows:[], valUSD:0, valCOP:0, invCOP:0, plCOP:0, priceEff:0, fxEff:0, noFx:0, noPx:0, byBroker:{}, cls:{stock:mkc(), crypto:mkc()}};
   Object.values(AGG).forEach(a => {
     const px = pxOf(a.sym);
@@ -1716,7 +1773,7 @@ function equityCalc(){
       if (l.date){
         const t = Date.parse(l.date + 'T12:00:00Z');
         cl.flows.push({t, v:-g.inv}); cl.valDated += g.valCOP; cl.ageNum += g.inv * Math.max(0, (Date.now() - t) / 86400000); cl.ageDen += g.inv;
-      } else cl.noDate++;
+      } else { cl.noDate++; cl.undatedInv += g.inv; }
     });
     out.valUSD += row.valUSD; out.valCOP += row.valCOP; out.invCOP += row.inv; out.plCOP += row.pl; out.priceEff += row.pe; out.fxEff += row.fe;
     out.rows.push(row);
@@ -1787,21 +1844,27 @@ $('#cdtSave').onclick = () => {
   if (bad.length){ $('#cdtErr').textContent = 'Revisa el CDT ' + bad.join(', ') + ': necesita capital, tasa, fecha de inicio y un vencimiento posterior.'; return; }
   CDT = out; saveCdt(); toolsInit = false; dlgCdt.close(); drawCdt();
 };
+let qoT = 0;
+function qoRedraw(){
+  if (!$('#viewCdt').hidden) drawCdt();
+  if (!$('#viewEq').hidden || !$('#viewCy').hidden) drawPos();
+  if (!$('#viewSum').hidden) drawSum();
+}
 async function quotesOnly(){
   await Promise.all(Object.keys(AGG).map(async sym => {
     const w = W[sym] || (W[sym] = {});
     try{ w.q = await quoteOf(sym); w.qerr = null; }catch(e){ w.qerr = e.message; }
+    const now = Date.now();
+    if (now - qoT > 400){ qoT = now; qoRedraw(); }
   }));
-  if (!$('#viewCdt').hidden) drawCdt();
-  if (!$('#viewEq').hidden || !$('#viewCy').hidden) drawPos();
-  if (!$('#viewSum').hidden) drawSum();
+  qoRedraw();
 }
 setInterval(() => { if ((!$('#viewEq').hidden || !$('#viewCy').hidden || !$('#viewSum').hidden) && !document.hidden) quotesOnly(); }, 30000);
 setInterval(() => { if (!$('#viewSum').hidden && !document.hidden) drawSum(); }, 15000);
 
 /* ---------- Vista Portafolio ---------- */
 const BROKER_COLORS = ['#6cb6ff', '#f2b84b', '#35d6a4', '#c792ea', '#ff8f6b', '#8ad1c2', '#e5c07b', '#7aa2f7'];
-const BROKER_HINTS = ['Interactive Brokers', 'Tyba', 'Trii', 'Hapi', 'Binance', 'Bitso', 'Buda', 'Quantfury', 'Billetera propia'];
+const BROKER_HINTS = ['ARQ', 'Interactive Brokers', 'Hapi', 'Tyba', 'Trii', 'Binance', 'Bitso', 'Buda', 'Quantfury', 'Billetera propia'];
 const qtyF = v => (+v).toLocaleString('en-US', {maximumFractionDigits:8});
 
 function drawGroup(k){
@@ -1816,10 +1879,16 @@ function drawGroup(k){
   const c = sumCalc(), g = c[k];
   if (!c.fx){ box.innerHTML = '<div class="empty">Esperando el precio del dólar para calcular en pesos…</div>'; bBox.innerHTML = ''; cBox.innerHTML = ''; return; }
   const lotsAll = entries.flatMap(a => a.lots), noFx = lotsAll.filter(l => !l.fx).length;
+  const missing = entries.filter(a => !pxOf(a.sym)).map(a => a.sym);
   const warn = [];
   if (noFx) warn.push(`${noFx} compra(s) sin dólar de esa fecha: el efecto del dólar se muestra en cero`);
   if (g.noDate) warn.push(`${g.noDate} compra(s) sin fecha: no entran en la rentabilidad anual`);
-  if (entries.some(a => !pxOf(a.sym))) warn.push('Algún activo aún no tiene precio');
+  if (missing.length && missing.length < entries.length) warn.push(`Sin precio todavía: ${missing.join(', ')}. No entran en los totales hasta que cargue su cotización`);
+  if (missing.length === entries.length){
+    box.innerHTML = `<div class="empty">Todavía no tengo el precio de ${esc(missing.join(', '))}, por eso los totales aparecen en cero. Suele ser cuestión de unos segundos; si no carga, revisa tus claves (botón Claves) o tu conexión.
+      <div class="sum-cta"><button class="btn primary" data-act="retry">Reintentar precios</button></div></div>`;
+    bBox.innerHTML = '';
+  } else
   box.innerHTML = `<div class="sum-hero">
       <div class="sum-big"><span>Rentabilidad anual</span><b class="${g.ann == null ? '' : (g.ann >= 0 ? 'up' : 'dn')}">${annF(g.ann)}</b><small>${esc(annNote(g.young, g.flows.length > 0))}</small></div>
       <div class="sum-big"><span>Valor hoy en pesos</span><b class="num">${copF(g.val)}</b><small class="num">Invertido ${copF(g.inv)} · US$ ${fmtUSD(g.valUSD)}</small></div>
@@ -1828,7 +1897,7 @@ function drawGroup(k){
     <div class="sum-split"><span>Por el precio del activo <b class="num ${g.pe >= 0 ? 'up' : 'dn'}">${copS(g.pe)}</b></span><span>Por el dólar <b class="num ${g.fe >= 0 ? 'up' : 'dn'}">${copS(g.fe)}</b></span></div>
     ${warn.length ? `<div class="sub warnline">${warn.map(esc).join(' · ')}</div>` : ''}`;
   const bs = Object.entries(g.byBroker).sort((a, b) => b[1] - a[1]), tot = bs.reduce((a, x) => a + x[1], 0);
-  bBox.innerHTML = tot > 0 ? `<h4 class="sec-h4">Dónde lo tienes</h4>
+  if (missing.length !== entries.length) bBox.innerHTML = tot > 0 ? `<h4 class="sec-h4">Dónde lo tienes</h4>
     <div class="alloc" role="img" aria-label="Distribución por broker">${bs.map(([b, v], i) => `<i style="width:${(v / tot * 100).toFixed(2)}%;background:${BROKER_COLORS[i % BROKER_COLORS.length]}"></i>`).join('')}</div>
     <div class="alloc-l">${bs.map(([b, v], i) => `<span><i style="background:${BROKER_COLORS[i % BROKER_COLORS.length]}"></i>${esc(b)} ${(v / tot * 100).toFixed(0)}% · <span class="num">${copF(v)}</span></span>`).join('')}</div>` : '';
   const cards = entries.map(a => ({a, g:posGain(a.sym), px:pxOf(a.sym)})).sort((x, y) => ((y.g ? y.g.valCOP : 0) - (x.g ? x.g.valCOP : 0)));
@@ -1862,8 +1931,20 @@ const dlgLot = $('#dlgLot');
 let editingLot = null, fxTouched = false;
 function refreshLists(){
   $('#symList').innerHTML = [...new Set([...PF.map(p => p.sym), ...CRYPTO])].map(s => `<option value="${esc(s)}">`).join('');
-  $('#brokerList').innerHTML = [...new Set([...LOTS.map(l => l.broker).filter(Boolean), ...BROKER_HINTS])].map(b => `<option value="${esc(b)}">`).join('');
 }
+/* lista desplegable de brokers: los que ya usaste, los más comunes y "Otro" para escribir uno nuevo */
+const brokerNames = () => [...new Set([...BROKER_HINTS, ...LOTS.map(l => l.broker).filter(Boolean)])];
+function brokerOpts(cur){
+  const names = brokerNames(); if (cur && !names.includes(cur)) names.unshift(cur);
+  return '<option value="">Sin broker / no sé</option>' + names.map(b => `<option value="${esc(b)}" ${b === cur ? 'selected' : ''}>${esc(b)}</option>`).join('') + '<option value="__otro">Otro (escribir)…</option>';
+}
+function brokerFill(sel, cur){ sel.innerHTML = brokerOpts(cur || ''); const inp = sel.parentElement.querySelector('.bro-new'); if (inp){ inp.value = ''; inp.hidden = true; } }
+function brokerGet(sel){ if (!sel) return ''; if (sel.value !== '__otro') return sel.value; const inp = sel.parentElement.querySelector('.bro-new'); return inp ? inp.value.trim() : ''; }
+document.addEventListener('change', e => {
+  const sel = e.target.closest && e.target.closest('select.bro-sel'); if (!sel) return;
+  const inp = sel.parentElement.querySelector('.bro-new'); if (!inp) return;
+  inp.hidden = sel.value !== '__otro'; if (!inp.hidden) inp.focus();
+});
 function openLot(l, sym, kind){
   editingLot = l ? l.id : null; fxTouched = !!(l && l.fx);
   refreshLists();
@@ -1871,7 +1952,7 @@ function openLot(l, sym, kind){
   lotKindUI();
   $('#lotTitle').textContent = l ? 'Editar compra' : 'Agregar compra';
   $('#lotSym').value = l ? l.sym : (sym || '');
-  $('#lotBroker').value = l ? l.broker : (LOTS.length ? LOTS[LOTS.length - 1].broker || '' : '');
+  brokerFill($('#lotBroker'), l ? l.broker : (LOTS.length ? LOTS[LOTS.length - 1].broker || '' : ''));
   $('#lotDate').value = l ? (l.date || '') : bogKey(Date.now());
   $('#lotQty').value = l ? l.qty : '';
   $('#lotCur').value = l && l.cop ? 'COP' : 'USD';
@@ -1885,7 +1966,6 @@ function openLot(l, sym, kind){
 function lotKindUI(){
   const c = $('#lotKind').value === 'crypto';
   $('#lotSym').placeholder = c ? 'BTC, ETH, SOL…' : 'META, VOO, AAPL…';
-  $('#lotBroker').placeholder = c ? 'Binance, Bitso, billetera propia…' : 'Interactive Brokers, Tyba…';
 }
 $('#lotKind').addEventListener('change', lotKindUI);
 $('#lotSym').addEventListener('change', () => { const sy = $('#lotSym').value.trim().toUpperCase(); if (isCrypto(sy)){ $('#lotKind').value = 'crypto'; lotKindUI(); } });
@@ -1921,7 +2001,7 @@ $('#lotSave').onclick = async () => {
     }
     const kind = $('#lotKind').value === 'crypto' ? 'crypto' : 'stock';
     if (kind === 'crypto') CRYPTO.add(sym);
-    const lot = {id:editingLot || uid(), sym, kind, broker:$('#lotBroker').value.trim(), date, qty, price, fx, cop};
+    const lot = {id:editingLot || uid(), sym, kind, broker:brokerGet($('#lotBroker')), date, qty, price, fx, cop};
     const i = LOTS.findIndex(x => x.id === lot.id);
     if (i >= 0) LOTS[i] = lot; else LOTS.push(lot);
     afterLotsChange(); dlgLot.close();
@@ -1982,6 +2062,7 @@ document.addEventListener('click', e => {
   else if (a === 'scan') scanOpen();
   else if (a === 'import') importOpen();
   else if (a === 'backup') backupOpen();
+  else if (a === 'retry') quotesOnly();
 });
 $('#bkClose').onclick = () => dlgBk.close();
 $('#bkDown').onclick = async () => {
@@ -2043,7 +2124,7 @@ function scReset(){
   $('#scFiles').textContent = ''; $('#scReview').innerHTML = ''; $('#scOut').textContent = '';
   $('#scRead').hidden = false; $('#scRead').disabled = false; $('#scAdd').hidden = true;
   try{ $('#scPin').value = vget('ahed_pin') || ''; }catch(e){}
-  refreshLists();
+  refreshLists(); brokerFill($('#scBroker'), '');
 }
 const scanOpen = () => { scReset(); dlgScan.showModal(); };
 $('#scCancel').onclick = () => dlgScan.close();
@@ -2066,7 +2147,7 @@ $('#scRead').onclick = async () => {
     }
     if (files.reduce((a, f) => a + f.data.length, 0) > 4.2e6){ out.textContent = 'Los archivos pesan demasiado (máximo 4 MB en total). Sube menos páginas o capturas más pequeñas.'; return; }
     out.textContent = 'Leyendo el extracto… puede tardar hasta 30 segundos.';
-    const r = await fetch('/api/extracto', {method:'POST', headers:{'Content-Type':'application/json', 'x-ahed-code':pin}, body:JSON.stringify({files, broker:$('#scBroker').value.trim()})});
+    const r = await fetch('/api/extracto', {method:'POST', headers:{'Content-Type':'application/json', 'x-ahed-code':pin}, body:JSON.stringify({files, broker:brokerGet($('#scBroker'))})});
     const j = await r.json().catch(() => ({error:'Respuesta inválida del servidor.'}));
     if (!r.ok){ out.textContent = j.error || ('Error ' + r.status); return; }
     try{ vset('ahed_pin', pin); }catch(e){}
@@ -2075,7 +2156,7 @@ $('#scRead').onclick = async () => {
   finally { $('#scRead').disabled = false; }
 };
 function scBuild(j){
-  const hint = $('#scBroker').value.trim(), broker = hint || j.broker || '';
+  const hint = brokerGet($('#scBroker')), broker = hint || j.broker || '';
   const rows = [];
   (j.transactions || []).forEach(t => rows.push({kind:'Compra', sell:t.side === 'sell', date:t.date || '', sym:t.symbol, qty:t.quantity, price:t.price, cur:t.currency, broker}));
   (j.positions || []).forEach(p => rows.push({kind:'Posición', date:'', sym:p.symbol, qty:p.quantity, price:p.avg_cost, cur:p.currency, broker}));
@@ -2098,7 +2179,7 @@ function scBuild(j){
       <label>Cantidad<input class="sc-qty" inputmode="decimal" value="${r.qty}"></label>
       <label>Precio por unidad<input class="sc-price" inputmode="decimal" value="${r.price == null ? '' : r.price}"></label>
       <label>Moneda<select class="sc-cur"><option value="USD" ${r.cur === 'USD' ? 'selected' : ''}>US$</option><option value="COP" ${r.cur === 'COP' ? 'selected' : ''}>COP</option></select></label>
-      <label>Broker<input class="sc-bro" list="brokerList" value="${esc(r.broker)}"></label></div>`).join('');
+      <label>Broker<select class="sc-bro bro-sel">${brokerOpts(r.broker)}</select><input class="bro-new" hidden placeholder="Nombre del broker" autocomplete="off"></label></div>`).join('');
   $('#scAdd').hidden = false;
 }
 $('#scAdd').onclick = async () => {
@@ -2108,7 +2189,7 @@ $('#scAdd').onclick = async () => {
     const q = s => row.querySelector(s).value;
     const sym = q('.sc-sym').trim().toUpperCase().replace(/^\$/, ''), qty = parseNum(q('.sc-qty')), pr = parseNum(q('.sc-price'));
     if (!SYM_RE.test(sym) || !(qty > 0) || !(pr > 0)){ errs.push(sym || ('fila ' + (i + 1))); return; }
-    picked.push({sym, qty, pr, cur:q('.sc-cur'), date:parseDate(q('.sc-date')) || '', broker:q('.sc-bro').trim()});
+    picked.push({sym, qty, pr, cur:q('.sc-cur'), date:parseDate(q('.sc-date')) || '', broker:brokerGet(row.querySelector('.sc-bro'))});
   });
   if (errs.length) return void (out.textContent = 'Revisa símbolo, cantidad y precio en: ' + errs.join(', ') + '.');
   if (!picked.length) return void (out.textContent = 'No marcaste ninguna fila.');
@@ -2134,6 +2215,56 @@ $('#scAdd').onclick = async () => {
     if (lots.length){ $('#scReview').innerHTML = ''; $('#scAdd').hidden = true; }
   } finally { $('#scAdd').disabled = false; }
 };
+
+/* ---------- Inflación de Colombia (IPC del DANE) para el rendimiento real ---------- */
+const INF_M = {   // variación mensual del IPC (%), 2010–2021
+  2010:[0.69,0.83,0.25,0.46,0.10,0.11,-0.04,0.11,-0.14,-0.09,0.19,0.65],
+  2011:[0.91,0.60,0.27,0.12,0.28,0.32,0.14,-0.03,0.31,0.19,0.14,0.42],
+  2012:[0.73,0.61,0.12,0.14,0.30,0.08,-0.02,0.04,0.29,0.16,-0.14,0.09],
+  2013:[0.30,0.44,0.21,0.25,0.28,0.23,0.04,0.08,0.29,-0.26,-0.22,0.26],
+  2014:[0.49,0.63,0.39,0.46,0.48,0.09,0.15,0.20,0.14,0.16,0.13,0.27],
+  2015:[0.64,1.15,0.59,0.54,0.26,0.10,0.19,0.48,0.72,0.68,0.60,0.62],
+  2016:[1.29,1.28,0.94,0.50,0.51,0.48,0.52,-0.32,-0.05,-0.06,0.11,0.42],
+  2017:[1.02,1.01,0.47,0.47,0.23,0.11,-0.05,0.14,0.04,0.02,0.18,0.38],
+  2018:[0.63,0.71,0.24,0.46,0.25,0.15,-0.13,0.12,0.16,0.12,0.12,0.30],
+  2019:[0.60,0.57,0.43,0.50,0.31,0.27,0.22,0.09,0.23,0.16,0.10,0.26],
+  2020:[0.42,0.67,0.57,0.16,-0.32,-0.38,0.00,-0.01,0.32,-0.06,-0.15,0.38],
+  2021:[0.41,0.64,0.51,0.59,1.00,-0.05,0.32,0.45,0.38,0.01,0.50,0.73],
+  2025:[0.565,0.565,0.565,0.565,0.565,0.565,0.565,0.19,0.251,0.251,0.07,0.27],   // acumulado ene–ago 4,22%; total 5,10%
+  2026:[1.01,1.01,1.01,0.78,0.43,0.43,0.17,0.39]       // ene–ago 2026 (acumulado 5,35%; Ene–Mar y May–Jun repartidos parejo)
+};
+const INF_ANUAL = {2022:13.12, 2023:9.28, 2024:5.20};   // diciembre a diciembre; se reparte parejo entre los meses
+const INF_ULTIMO = '2026-08', INF_ULTIMO_ANUAL = 6.24;             // último dato publicado: agosto de 2026, 6,24% anual
+const inflFwd = () => { try{ const v = parseFloat(localStorage.getItem('infl_fwd')); if (isFinite(v) && v > -5 && v < 100) return v; }catch(e){} return INF_ULTIMO_ANUAL; };
+let INF_CACHE = null;
+function inflIdx(){
+  const fwd = inflFwd(), nowKey = bogKey(Date.now()).slice(0, 7);
+  if (INF_CACHE && INF_CACHE.fwd === fwd && INF_CACHE.nowKey === nowKey) return INF_CACHE.idx;
+  const idx = {}, mon = {};
+  let level = 100;
+  for (let y = 2010; ; y++){
+    for (let m = 1; m <= 12; m++){
+      const key = `${y}-${String(m).padStart(2, '0')}`;
+      let pct;
+      if (INF_M[y] && INF_M[y][m - 1] != null) pct = INF_M[y][m - 1];
+      else if (INF_ANUAL[y] != null) pct = (Math.pow(1 + INF_ANUAL[y] / 100, 1 / 12) - 1) * 100;
+      else pct = (Math.pow(1 + fwd / 100, 1 / 12) - 1) * 100;      // meses que el DANE aún no publica
+      level *= 1 + pct / 100; idx[key] = level; mon[key] = pct;
+      if (key >= nowKey){ INF_CACHE = {fwd, nowKey, idx, mon}; return idx; }
+    }
+  }
+}
+function cpiAt(ts){
+  const k = bogKey(ts), y = +k.slice(0, 4), m = +k.slice(5, 7), d = +k.slice(8, 10);
+  if (y < 2010) return 100;
+  const idx = inflIdx(), key = k.slice(0, 7);
+  const prevKey = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
+  const cur = idx[key] != null ? idx[key] : idx[Object.keys(idx).pop()];
+  const prev = idx[prevKey] != null ? idx[prevKey] : 100;
+  return prev * Math.pow(cur / prev, d / new Date(Date.UTC(y, m, 0)).getUTCDate());
+}
+const inflFactor = t => cpiAt(Date.now()) / cpiAt(t);           // cuánto vale hoy, en pesos de hoy, un peso de la fecha t
+const infl12 = () => cpiAt(Date.now()) / cpiAt(Date.now() - 365 * 86400000) - 1;
 
 /* ---------- Resumen: patrimonio y rentabilidad global ---------- */
 const DAY = 86400000;
@@ -2185,7 +2316,20 @@ function sumCalc(){
   const ageDen = cdt.ageDen + eq.cls.stock.ageDen + eq.cls.crypto.ageDen;
   const avgAge = ageDen > 0 ? (cdt.ageNum + eq.cls.stock.ageNum + eq.cls.crypto.ageNum) / ageDen : 0;
   const ann = xirr(allFlows.concat(datedVal > 0 ? [{t:now, v:datedVal}] : []));
-  return {fx, eq, cdt, stock, crypto, val, inv, pl, ret:inv > 0 ? pl / inv : null, ann, avgAge, young:avgAge < 180, hasDates:allFlows.length > 0};
+  /* rendimiento real: cada peso invertido se lleva a pesos de hoy con el IPC del DANE y se vuelve a calcular */
+  const realOf = (outs, finalVal, undated, value) => {
+    const dated = outs.filter(f => f.v < 0 && f.t < now).map(f => ({t:f.t, v:f.v * inflFactor(f.t)}));
+    const realInv = -dated.reduce((a, f) => a + f.v, 0) + undated;
+    const gain = value - realInv;
+    return {ann:(finalVal > 0 && dated.length) ? xirr(dated.concat([{t:now, v:finalVal}])) : null, gain, ret:realInv > 0 ? gain / realInv : null, inv:realInv};
+  };
+  const real = {
+    cdt:realOf(cdt.flows, cdt.datedVal, 0, cdt.now),
+    stock:realOf(eq.cls.stock.flows, eq.cls.stock.valDated, eq.cls.stock.undatedInv, stock.val),
+    crypto:realOf(eq.cls.crypto.flows, eq.cls.crypto.valDated, eq.cls.crypto.undatedInv, crypto.val),
+    all:realOf(cdt.flows.concat(eq.cls.stock.flows, eq.cls.crypto.flows), datedVal, eq.cls.stock.undatedInv + eq.cls.crypto.undatedInv, val)
+  };
+  return {fx, eq, cdt, stock, crypto, val, inv, pl, ret:inv > 0 ? pl / inv : null, ann, avgAge, young:avgAge < 180, hasDates:allFlows.length > 0, real, infl12:infl12()};
 }
 const annF = v => v == null ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '% E.A.';
 const annNote = (young, hasDates) => !hasDates ? 'Agrega la fecha de compra para calcularla' : young ? 'Poco tiempo invertido: el número anual exagera, úsalo como referencia' : 'Pesa cada peso por el tiempo que lleva invertido';
@@ -2202,9 +2346,9 @@ function drawSum(){
   if (!c.fx && Object.keys(AGG).length){ box.innerHTML = '<div class="empty">Esperando el precio del dólar para calcular en pesos…</div>'; return; }
   const total = c.val || 1, pctOf = v => (v / total * 100);
   const classes = [
-    {k:'cdt', name:'CDT', tag:'Pesos, tasa fija', color:'var(--blue)', has:c.cdt.n > 0, val:c.cdt.now, inv:c.cdt.cap, pl:c.cdt.pl, ret:c.cdt.ret, ann:c.cdt.ann, young:false, dated:true},
-    {k:'stock', name:'Acciones y ETF', tag:'Dólares', color:'var(--amber)', has:c.stock.inv > 0, val:c.stock.val, inv:c.stock.inv, pl:c.stock.pl, ret:c.stock.ret, ann:c.stock.ann, young:c.stock.young, dated:c.stock.noDate === 0 || c.stock.avgAge > 0, pe:c.stock.pe, fe:c.stock.fe, noDate:c.stock.noDate},
-    {k:'crypto', name:'Cripto', tag:'Dólares', color:'#c792ea', has:c.crypto.inv > 0, val:c.crypto.val, inv:c.crypto.inv, pl:c.crypto.pl, ret:c.crypto.ret, ann:c.crypto.ann, young:c.crypto.young, dated:c.crypto.noDate === 0 || c.crypto.avgAge > 0, pe:c.crypto.pe, fe:c.crypto.fe, noDate:c.crypto.noDate}
+    {k:'cdt', name:'CDT', tag:'Pesos, tasa fija', color:'var(--blue)', has:c.cdt.n > 0, val:c.cdt.now, inv:c.cdt.cap, pl:c.cdt.pl, ret:c.cdt.ret, ann:c.cdt.ann, young:false, dated:true, rl:c.real.cdt},
+    {k:'stock', name:'Acciones y ETF', tag:'Dólares', color:'var(--amber)', has:c.stock.inv > 0, val:c.stock.val, inv:c.stock.inv, pl:c.stock.pl, ret:c.stock.ret, ann:c.stock.ann, young:c.stock.young, dated:c.stock.noDate === 0 || c.stock.avgAge > 0, pe:c.stock.pe, fe:c.stock.fe, noDate:c.stock.noDate, rl:c.real.stock},
+    {k:'crypto', name:'Cripto', tag:'Dólares', color:'#c792ea', has:c.crypto.inv > 0, val:c.crypto.val, inv:c.crypto.inv, pl:c.crypto.pl, ret:c.crypto.ret, ann:c.crypto.ann, young:c.crypto.young, dated:c.crypto.noDate === 0 || c.crypto.avgAge > 0, pe:c.crypto.pe, fe:c.crypto.fe, noDate:c.crypto.noDate, rl:c.real.crypto}
   ].filter(x => x.has);
   const contrib = [
     ['Intereses de CDT (netos)', c.cdt.pl], ['Precio de acciones y ETF', c.stock.pe], ['Dólar en acciones y ETF', c.stock.fe],
@@ -2212,18 +2356,22 @@ function drawSum(){
   ].filter(x => Math.abs(x[1]) >= 1);
   const maxAbs = Math.max(1, ...contrib.map(x => Math.abs(x[1])));
   const best = contrib.slice().sort((a, b) => b[1] - a[1])[0], worst = contrib.slice().sort((a, b) => a[1] - b[1])[0];
+  const miss = Object.keys(AGG).filter(sym => !pxOf(sym));
   box.innerHTML = `
+    ${miss.length ? `<div class="sub warnline">Sin precio todavía: ${esc(miss.join(', '))}. No entra en los totales hasta que cargue su cotización. <button class="btn sm" data-act="retry">Reintentar</button></div>` : ''}
     <div class="sum-hero">
-      <div class="sum-big"><span>Rentabilidad anual (todo junto)</span><b class="${c.ann == null ? '' : (c.ann >= 0 ? 'up' : 'dn')}">${annF(c.ann)}</b><small>${esc(annNote(c.young, c.hasDates))}</small></div>
+      <div class="sum-big"><span>Rentabilidad anual nominal</span><b class="${c.ann == null ? '' : (c.ann >= 0 ? 'up' : 'dn')}">${annF(c.ann)}</b><small>${esc(annNote(c.young, c.hasDates))}</small></div>
+      <div class="sum-big"><span>Rentabilidad anual real</span><b class="${c.real.all.ann == null ? '' : (c.real.all.ann >= 0 ? 'up' : 'dn')}">${annF(c.real.all.ann)}</b><small>Ya descontada la inflación del DANE (${INF_ULTIMO_ANUAL.toFixed(2).replace('.', ',')}% anual a agosto de 2026)</small></div>
       <div class="sum-big"><span>Patrimonio hoy</span><b class="num">${copF(c.val)}</b><small class="num">Invertido ${copF(c.inv)}</small></div>
-      <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' acumulado'}</small></div>
+      <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' acumulado nominal'}</small><small class="num ${c.real.all.gain >= 0 ? 'up' : 'dn'}">Real, en pesos de hoy: ${copS(c.real.all.gain)}${c.real.all.ret == null ? '' : ' (' + pctF(c.real.all.ret) + ')'}</small></div>
     </div>
     <h4 class="sec-h4">Cada grupo, aislado y en pesos</h4>
     <div class="cdt-grid sum-cards">
       ${classes.map(x => `<article class="cdt-card">
           <div class="c-top"><span class="c-sym" style="color:${x.color}">${esc(x.name)}</span><span class="flag">${esc(x.tag)}</span></div>
           <div class="sum-ann ${x.ann != null && x.ann < 0 ? 'dn' : 'up'}">${annF(x.ann)}</div>
-          <div class="sub">Rentabilidad anual${x.k === 'cdt' ? ' neta' : ''}</div>
+          <div class="sub">Rentabilidad anual nominal${x.k === 'cdt' ? ' (neta de retención)' : ''}</div>
+          <div class="sum-real">Real: <b class="${x.rl.ann != null && x.rl.ann < 0 ? 'dn' : 'up'}">${annF(x.rl.ann)}</b> · ganancia real <span class="num ${x.rl.gain >= 0 ? 'up' : 'dn'}">${copS(x.rl.gain)}</span></div>
           <div class="cdt-nums">
             <div><span>Valor hoy</span><b class="num">${copF(x.val)}</b><small class="num">Invertido ${copF(x.inv)}</small></div>
             <div><span>Ganancia</span><b class="num ${x.pl >= 0 ? 'up' : 'dn'}">${copS(x.pl)}</b><small>${x.ret == null ? '' : pctF(x.ret) + ' acumulado'}</small></div>
@@ -2238,11 +2386,18 @@ function drawSum(){
     ${contrib.length ? `<h4 class="sec-h4">De dónde viene tu ganancia</h4>
     <div class="contrib">${contrib.map(([lab, v]) => `<div class="ct-row"><span>${esc(lab)}</span><div class="ct-bar"><i class="${v >= 0 ? 'up' : 'dn'}" style="width:${(Math.abs(v) / maxAbs * 100).toFixed(1)}%"></i></div><b class="num ${v >= 0 ? 'up' : 'dn'}">${copS(v)}</b></div>`).join('')}</div>
     ${best && worst && best !== worst ? `<div class="sub">Lo que más te aporta: <b>${esc(best[0])}</b>${worst[1] < 0 ? ` · Lo que más te resta: <b>${esc(worst[0])}</b>` : ''}.</div>` : ''}` : ''}
-    <div class="sub sum-note">La rentabilidad anual se calcula con la fecha y el monto de cada compra y de cada CDT, para que cosas con edades distintas sean comparables. Cuando algo lleva menos de 6 meses, el número anual es una proyección de un periodo corto y puede ser extremo; úsalo solo como referencia. No incluye ventas, impuestos ni comisiones. No es asesoría financiera.</div>`;
+    <div class="sub sum-note">La rentabilidad anual se calcula con la fecha y el monto de cada compra y de cada CDT, para que cosas con edades distintas sean comparables. Cuando algo lleva menos de 6 meses, el número anual es una proyección de un periodo corto y puede ser extremo; úsalo solo como referencia. No incluye ventas, impuestos ni comisiones. No es asesoría financiera.</div>
+    <div class="sub sum-note"><b>Rendimiento real:</b> es el nominal descontando la inflación (IPC total del DANE). Cada peso que invertiste se lleva a pesos de hoy según el IPC de su fecha de compra, y con eso se recalcula la ganancia y la tasa anual. Si tus compras sin fecha pesan mucho, el real las trata sin inflación y se queda corto. Las cifras mensuales de 2022 a 2024 se reparten parejo dentro de cada año (los totales anuales son los del DANE).</div>`;
 }
 $('#sumBody').addEventListener('click', e => {
   const b = e.target.closest('[data-go]'); if (!b) return;
   document.querySelector(`.vtab[data-view="${b.dataset.go}"]`).click();
+});
+$('#inflFwd').value = inflFwd();
+$('#inflFwd').addEventListener('change', e => {
+  const v = parseFloat(String(e.target.value).replace(',', '.'));
+  try{ if (isFinite(v) && v > -5 && v < 100) localStorage.setItem('infl_fwd', String(v)); else localStorage.removeItem('infl_fwd'); }catch(err){}
+  e.target.value = inflFwd(); INF_CACHE = null; drawSum();
 });
 $('#sumHide').onclick = e => {
   const on = document.body.classList.toggle('hide-amt');
