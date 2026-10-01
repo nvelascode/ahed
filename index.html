@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{if(localStorage.getItem('ahed_vault'))document.documentElement.classList.add('locked')}catch(e){}</script>
 <title>Ahed · Mercados</title>
 <meta name="theme-color" content="#0f1720">
 <meta name="description" content="Ahed: mercados, acciones, CDT y dólar en un solo lugar.">
@@ -184,6 +185,17 @@ dialog:has(#scReview){max-width:600px;max-height:92vh;overflow:auto}
 .sc-row .chk input{width:18px;height:18px}
 .tag{font-size:11.5px;padding:1px 8px;border:1px solid var(--line);border-radius:99px;color:var(--mut)}
 .tag.warn{color:var(--amber);border-color:rgba(242,184,75,.45)}
+#lockScreen{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;padding:20px}
+html.locked #lockScreen{display:flex}
+html.locked body > *:not(#lockScreen):not(script){visibility:hidden}
+.lock-box{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.lock-box img{border-radius:16px}
+.lock-box input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--txt);font:inherit;font-size:16px;text-align:center}
+.lock-box .btn{width:100%;padding:11px}
+.lock-box details{margin-top:8px;font-size:13px;color:var(--mut)} .lock-box summary{cursor:pointer}
+.bk-pass{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut);margin-bottom:10px}
+.bk-pass input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--txt);font:inherit;font-size:14px}
+dialog:has(#secOff){max-width:520px;max-height:92vh;overflow:auto}
 @media (max-width:860px){.tools{grid-template-columns:1fr}}
 @media (max-width:860px){.sk-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
 @media (max-width:860px){.mk{grid-template-columns:1fr;gap:18px}}
@@ -240,12 +252,28 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 </head>
 <body>
 
+<div id="lockScreen" role="dialog" aria-modal="true" aria-label="Ahed bloqueada">
+  <div class="lock-box">
+    <img src="icon.svg" width="72" height="72" alt="">
+    <h1>Ahed</h1>
+    <p class="sub">Escribe tu contraseña para entrar.</p>
+    <input id="lockPw" type="password" autocomplete="current-password" placeholder="Contraseña" aria-label="Contraseña">
+    <button class="btn primary" id="lockGo">Entrar</button>
+    <div class="sub warnline" id="lockErr" role="alert"></div>
+    <details><summary>¿Olvidaste la contraseña?</summary>
+      <p class="sub">No existe forma de recuperarla: tus datos están cifrados con ella. Puedes borrar los datos de este dispositivo y empezar de nuevo; si tienes un respaldo, lo cargas después desde Portafolio → Respaldo.</p>
+      <button class="btn" id="lockWipe">Borrar datos de este dispositivo</button></details>
+  </div>
+</div>
+
 <header>
   <h1 class="brand"><img src="icon.svg" alt="" width="32" height="32">Ahed</h1>
   <div class="hdr-r">
     <span class="clock">Bogotá <b id="clkBog">--:--:--</b></span>
     <span class="clock">Nueva York <b id="clkNY">--:--</b></span>
     <span class="pill" id="mkt"><span class="dot"></span><span id="mktTxt">Mercado EE.UU.</span></span>
+    <button class="btn" id="lockNow" hidden>Bloquear</button>
+    <button class="btn" id="secBtn">Seguridad</button>
     <button class="btn" id="keysBtn">Claves</button>
     <button class="btn" id="refresh">Actualizar</button>
   </div>
@@ -416,9 +444,42 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   <div class="dlg-b"><button class="btn" id="impCancel">Cerrar</button><button class="btn" id="impGo">Importar</button></div>
 </dialog>
 
+<dialog id="dlgSec">
+  <h2>Seguridad</h2>
+  <div id="secOff">
+    <p>Pon una contraseña para proteger tus datos. Tus compras, CDT y lista de vigilancia se guardan <b>cifrados</b> en este dispositivo, y Ahed se bloquea sola después de unos minutos sin usarla.</p>
+    <p class="sub warnline">Si olvidas la contraseña no hay forma de recuperar los datos. Antes de activarla, descarga un respaldo en Portafolio → Respaldo.</p>
+    <div class="lot-form">
+      <label class="wide">Nueva contraseña (mínimo 10 caracteres)<input id="secNew" type="password" autocomplete="new-password"></label>
+      <label class="wide">Repite la contraseña<input id="secNew2" type="password" autocomplete="new-password"></label>
+    </div>
+    <button class="btn primary" id="secOnBtn">Activar contraseña</button>
+  </div>
+  <div id="secOn" hidden>
+    <p>La contraseña está activa. Tus datos están cifrados en este dispositivo.</p>
+    <div class="lot-form">
+      <label>Bloquear tras<select id="secMin"><option value="1">1 minuto</option><option value="2">2 minutos</option><option value="5">5 minutos</option><option value="10">10 minutos</option><option value="15">15 minutos</option><option value="30">30 minutos</option></select></label>
+      <label>&nbsp;<button class="btn" id="secLockNow" type="button">Bloquear ahora</button></label>
+    </div>
+    <h4 class="sec-h4">Cambiar contraseña</h4>
+    <div class="lot-form">
+      <label class="wide">Contraseña actual<input id="secOld" type="password" autocomplete="current-password"></label>
+      <label>Nueva<input id="secChgNew" type="password" autocomplete="new-password"></label>
+      <label>Repite la nueva<input id="secChgNew2" type="password" autocomplete="new-password"></label>
+    </div>
+    <button class="btn" id="secChg">Cambiar contraseña</button>
+    <h4 class="sec-h4">Quitar contraseña</h4>
+    <div class="lot-form"><label class="wide">Contraseña actual<input id="secRmPw" type="password" autocomplete="current-password"></label></div>
+    <button class="btn" id="secRm">Quitar contraseña</button>
+  </div>
+  <div class="sub" id="secOut" role="status"></div>
+  <div class="dlg-b"><button class="btn" id="secClose">Cerrar</button></div>
+</dialog>
+
 <dialog id="dlgBk">
   <h2>Respaldo</h2>
   <p>Tus datos viven solo en este navegador. Descarga un respaldo para guardarlos o para pasarlos a otro celular o computador, y cárgalo allá. Incluye compras, CDT y tu lista de vigilancia.</p>
+  <label class="bk-pass">Contraseña del respaldo (opcional)<input id="bkPass" type="password" autocomplete="new-password" placeholder="Si la pones, el respaldo se cifra"></label>
   <div class="bk-row"><button class="btn" id="bkDown">Descargar respaldo</button><label class="btn file">Cargar archivo<input type="file" id="bkFile" accept="application/json,.json" hidden></label><button class="btn" id="bkCopy">Copiar como texto</button></div>
   <textarea id="bkText" rows="4" spellcheck="false" placeholder="O pega aquí un respaldo en texto y toca Cargar texto"></textarea>
   <div class="bk-row"><button class="btn" id="bkLoadText">Cargar texto</button></div>
@@ -429,7 +490,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. "Mis acciones": historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 11.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. "Mis acciones": historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 12.
 </p>
 
 <dialog id="dlg">
@@ -443,6 +504,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 </dialog>
 
 <script>
+window.__ahedStart = function(){
 'use strict';
 const TZ = 'America/Bogota';
 const $ = s => document.querySelector(s);
@@ -1019,8 +1081,8 @@ document.querySelectorAll('.chip[data-imp]').forEach(c => c.onclick = () => {
 $('#past').onclick = e => { F.past = !F.past; e.currentTarget.setAttribute('aria-pressed', F.past); drawCal(); };
 
 /* ---------- Historial por rangos ---------- */
-function cacheGet(k, ttl){ try{ const c = JSON.parse(localStorage.getItem(k) || 'null'); if (c && Date.now() - c.t < ttl) return c.d; }catch(e){} return null; }
-function cacheSet(k, d){ try{ localStorage.setItem(k, JSON.stringify({t:Date.now(), d})); }catch(e){} }
+function cacheGet(k, ttl){ try{ const c = JSON.parse(cstore().getItem(k) || 'null'); if (c && Date.now() - c.t < ttl) return c.d; }catch(e){} return null; }
+function cacheSet(k, d){ try{ cstore().setItem(k, JSON.stringify({t:Date.now(), d})); }catch(e){} }
 async function getText(url, proxy = true){
   const tries = [url];
   if (proxy){
@@ -1111,25 +1173,25 @@ const isCrypto = sym => CRYPTO.has(sym);
 const SYM_RE = /^[A-Z][A-Z0-9.\-]{0,9}$/;
 
 function loadLots(){
-  try{ const j = JSON.parse(localStorage.getItem(LOTS_KEY) || 'null'); if (Array.isArray(j)) return j; }catch(e){}
+  try{ const j = JSON.parse(vget(LOTS_KEY) || 'null'); if (Array.isArray(j)) return j; }catch(e){}
   try{ // migración desde la versión anterior (una línea por acción)
-    const old = JSON.parse(localStorage.getItem('pf_v1') || 'null');
+    const old = JSON.parse(vget('pf_v1') || 'null');
     if (Array.isArray(old)) return old.filter(p => p.sh > 0 && p.cost > 0).map(p => ({id:uid(), sym:p.sym, broker:'', date:'', qty:p.sh, price:p.cost, fx:p.fx || null, cop:null}));
   }catch(e){}
   return [];
 }
 let LOTS = loadLots();
-const saveLots = () => { try{ localStorage.setItem(LOTS_KEY, JSON.stringify(LOTS)); }catch(e){} };
+const saveLots = () => { try{ vset(LOTS_KEY, JSON.stringify(LOTS)); }catch(e){} };
 function loadPF(){
   let syms = null;
-  try{ const j = JSON.parse(localStorage.getItem(WATCH_KEY) || 'null'); if (Array.isArray(j) && j.length) syms = j; }catch(e){}
-  if (!syms){ try{ const o = JSON.parse(localStorage.getItem('pf_v1') || 'null'); if (Array.isArray(o) && o.length) syms = o.map(p => p.sym); }catch(e){} }
+  try{ const j = JSON.parse(vget(WATCH_KEY) || 'null'); if (Array.isArray(j) && j.length) syms = j; }catch(e){}
+  if (!syms){ try{ const o = JSON.parse(vget('pf_v1') || 'null'); if (Array.isArray(o) && o.length) syms = o.map(p => p.sym); }catch(e){} }
   if (!syms) syms = ['META','GOOGL','AMZN','AAPL','MSTR','RIOT'];
   LOTS.forEach(l => { if (!syms.includes(l.sym)) syms.push(l.sym); });
   return syms.slice(0, 20).map(sym => ({sym, sh:null, cost:null, fx:null}));
 }
 let PF = loadPF();
-const savePF = () => { try{ localStorage.setItem(WATCH_KEY, JSON.stringify(PF.map(p => p.sym))); }catch(e){} };
+const savePF = () => { try{ vset(WATCH_KEY, JSON.stringify(PF.map(p => p.sym))); }catch(e){} };
 
 let AGG = {};
 function aggLots(){
@@ -1577,11 +1639,11 @@ setInterval(() => { if (watchStarted && !$('#viewStocks').hidden) loadWatch(fals
 /* ---------- Mis CDT y portafolio en pesos ---------- */
 const CDT_KEY = 'cdt_v1';
 function loadCdt(){
-  try{ const j = JSON.parse(localStorage.getItem(CDT_KEY) || 'null'); if (Array.isArray(j)) return j; }catch(e){}
+  try{ const j = JSON.parse(vget(CDT_KEY) || 'null'); if (Array.isArray(j)) return j; }catch(e){}
   return [];
 }
 let CDT = loadCdt();
-const saveCdt = () => { try{ localStorage.setItem(CDT_KEY, JSON.stringify(CDT)); }catch(e){} };
+const saveCdt = () => { try{ vset(CDT_KEY, JSON.stringify(CDT)); }catch(e){} };
 const bogKey = ts => new Intl.DateTimeFormat('en-CA', {timeZone:TZ}).format(ts);
 const dayMs = key => Date.parse(key + 'T00:00:00Z');
 const daysBetween = (a, b) => Math.round((dayMs(b) - dayMs(a)) / 86400000);
@@ -1921,24 +1983,30 @@ const dlgBk = $('#dlgBk');
 const backupData = () => ({app:'ahed', version:1, exported:new Date().toISOString(), watch:PF.map(p => p.sym), lots:LOTS, cdt:CDT});
 $('#posBackup').onclick = () => { $('#bkText').value = ''; $('#bkOut').textContent = ''; dlgBk.showModal(); };
 $('#bkClose').onclick = () => dlgBk.close();
-$('#bkDown').onclick = () => {
-  const blob = new Blob([JSON.stringify(backupData(), null, 2)], {type:'application/json'});
+$('#bkDown').onclick = async () => {
+  const pw = $('#bkPass').value, data = pw ? await ahedSeal(pw, backupData()) : backupData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ahed-respaldo-${bogKey(Date.now())}.json`;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  $('#bkOut').textContent = 'Respaldo descargado. Guárdalo en un lugar seguro.';
+  $('#bkOut').textContent = pw ? 'Respaldo cifrado descargado. Sin su contraseña no se puede abrir.' : 'Respaldo descargado SIN cifrar: contiene todos tus datos. Guárdalo en un lugar seguro.';
 };
 $('#bkCopy').onclick = async () => {
-  const txt = JSON.stringify(backupData());
+  const pw = $('#bkPass').value, txt = JSON.stringify(pw ? await ahedSeal(pw, backupData()) : backupData());
   try{ await navigator.clipboard.writeText(txt); $('#bkOut').textContent = 'Respaldo copiado. Pégalo en un mensaje o nota para guardarlo.'; }
   catch(e){ $('#bkText').value = txt; $('#bkOut').textContent = 'Copia el texto de arriba.'; }
 };
-function restoreFrom(txt){
+async function restoreFrom(txt){
   let j; try{ j = JSON.parse(txt); }catch(e){ return 'El archivo no es un respaldo válido.'; }
+  if (j && j.app === 'ahed-enc'){
+    const pw = $('#bkPass').value;
+    if (!pw) return 'Este respaldo está cifrado: escribe su contraseña en el campo de arriba y vuelve a cargarlo.';
+    try{ j = await ahedOpen(pw, j); }catch(e){ return 'La contraseña del respaldo no es correcta.'; }
+  }
   if (!j || j.app !== 'ahed' || !Array.isArray(j.lots)) return 'Ese archivo no parece un respaldo de Ahed.';
   if (!confirm(`Esto reemplazará tus datos actuales por el respaldo (${j.lots.length} compras, ${(j.cdt || []).length} CDT). ¿Continuar?`)) return 'Cancelado.';
   LOTS = j.lots.filter(l => l && SYM_RE.test(l.sym) && l.qty > 0 && l.price > 0).map(l => ({id:l.id || uid(), sym:l.sym, broker:l.broker || '', date:l.date || '', qty:+l.qty, price:+l.price, fx:l.fx > 0 ? +l.fx : null, cop:l.cop > 0 ? +l.cop : null}));
   CDT = Array.isArray(j.cdt) ? j.cdt : []; saveCdt(); toolsInit = false;
-  try{ localStorage.setItem(WATCH_KEY, JSON.stringify(Array.isArray(j.watch) ? j.watch : [])); }catch(e){}
+  try{ vset(WATCH_KEY, JSON.stringify(Array.isArray(j.watch) ? j.watch : [])); }catch(e){}
   PF = loadPF(); syncPF(); savePF(); saveLots();
   Object.keys(W).forEach(k => delete W[k]); selSym = null;
   drawPos(); drawStocks(); drawCdt(); quotesOnly(); if (watchStarted) loadWatch(false);
@@ -1946,10 +2014,10 @@ function restoreFrom(txt){
 }
 $('#bkFile').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader(); r.onload = () => { $('#bkOut').textContent = restoreFrom(String(r.result)); }; r.readAsText(f);
+  const r = new FileReader(); r.onload = async () => { $('#bkOut').textContent = await restoreFrom(String(r.result)); }; r.readAsText(f);
   e.target.value = '';
 });
-$('#bkLoadText').onclick = () => { const t = $('#bkText').value.trim(); if (t) $('#bkOut').textContent = restoreFrom(t); };
+$('#bkLoadText').onclick = async () => { const t = $('#bkText').value.trim(); if (t) $('#bkOut').textContent = await restoreFrom(t); };
 
 
 
@@ -1972,7 +2040,7 @@ function scReset(){
   scFiles = []; scRows = [];
   $('#scFiles').textContent = ''; $('#scReview').innerHTML = ''; $('#scOut').textContent = '';
   $('#scRead').hidden = false; $('#scRead').disabled = false; $('#scAdd').hidden = true;
-  try{ $('#scPin').value = localStorage.getItem('ahed_pin') || ''; }catch(e){}
+  try{ $('#scPin').value = vget('ahed_pin') || ''; }catch(e){}
   refreshLists();
 }
 $('#posScan').onclick = () => { scReset(); dlgScan.showModal(); };
@@ -1999,7 +2067,7 @@ $('#scRead').onclick = async () => {
     const r = await fetch('/api/extracto', {method:'POST', headers:{'Content-Type':'application/json', 'x-ahed-code':pin}, body:JSON.stringify({files, broker:$('#scBroker').value.trim()})});
     const j = await r.json().catch(() => ({error:'Respuesta inválida del servidor.'}));
     if (!r.ok){ out.textContent = j.error || ('Error ' + r.status); return; }
-    try{ localStorage.setItem('ahed_pin', pin); }catch(e){}
+    try{ vset('ahed_pin', pin); }catch(e){}
     scBuild(j);
   }catch(e){ out.textContent = 'No pude completar la lectura: ' + (e && e.message ? e.message : 'error de conexión'); }
   finally { $('#scRead').disabled = false; }
@@ -2093,9 +2161,166 @@ setInterval(() => loadCal(false), 15 * 60 * 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) all(false); });
 loadBTC(); refreshPrices(); loadCal(false);
 
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+};
+</script>
+<script>
+/* ---------- Seguridad: contraseña, cifrado y bloqueo por inactividad ---------- */
+(function(){
+'use strict';
+const VAULT = 'ahed_vault', SECURE = ['lots_v1', 'cdt_v1', 'pf_v2', 'pf_v1', 'ahed_pin'], ITER = 600000;
+const enc = new TextEncoder(), dec = new TextDecoder();
+const ls = {
+  get:k => { try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set:(k, v) => { try{ localStorage.setItem(k, v); }catch(e){} },
+  del:k => { try{ localStorage.removeItem(k); }catch(e){} }
+};
+const $ = s => document.querySelector(s);
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const rnd = n => crypto.getRandomValues(new Uint8Array(n));
+async function derive(pw, salt, iter){
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['encrypt', 'decrypt']);
 }
+async function seal(key, obj){
+  const iv = rnd(12), ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(JSON.stringify(obj)));
+  return {iv:b64(iv), data:b64(new Uint8Array(ct))};
+}
+async function open(key, r){
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(r.iv)}, key, unb64(r.data));
+  return JSON.parse(dec.decode(pt));
+}
+
+let mode = !!ls.get(VAULT), MEM = null, KEY = null, rec = null, last = Date.now(), saveT = null, started = false, fails = 0;
+const lockMin = () => Number(ls.get('ahed_lock_min')) || 5;
+const reload = () => (window.__ahedReload || (() => location.reload()))();
+
+/* almacenamiento que usa la app para lo privado */
+window.vget = k => mode ? (MEM && Object.prototype.hasOwnProperty.call(MEM, k) ? MEM[k] : null) : ls.get(k);
+window.vset = (k, v) => { if (mode){ if (!MEM) return; MEM[k] = v; queueSave(); } else ls.set(k, v); };
+window.vdel = k => { if (mode){ if (MEM){ delete MEM[k]; queueSave(); } } else ls.del(k); };
+window.cstore = () => mode ? sessionStorage : localStorage;
+window.ahedSeal = async (pw, obj) => { const salt = rnd(16), key = await derive(pw, salt, ITER), r = await seal(key, obj); return {app:'ahed-enc', v:1, iter:ITER, salt:b64(salt), iv:r.iv, data:r.data}; };
+window.ahedOpen = async (pw, r) => open(await derive(pw, unb64(r.salt), r.iter), r);
+
+async function persist(){
+  if (!mode || !KEY || !MEM) return;
+  const r = await seal(KEY, MEM);
+  ls.set(VAULT, JSON.stringify({v:1, iter:rec.iter, salt:rec.salt, iv:r.iv, data:r.data}));
+}
+function queueSave(){ clearTimeout(saveT); saveT = setTimeout(() => { saveT = null; persist(); }, 250); }
+async function flush(){ if (saveT){ clearTimeout(saveT); saveT = null; } await persist(); }
+async function lockNow(){
+  if (!mode) return;
+  try{ await flush(); }catch(e){}
+  KEY = null; MEM = null;
+  try{ sessionStorage.clear(); }catch(e){}
+  reload();
+}
+window.ahedLock = lockNow;
+async function verify(pw){
+  try{ const v = JSON.parse(ls.get(VAULT)); await open(await derive(pw, unb64(v.salt), v.iter), v); return true; }catch(e){ return false; }
+}
+
+/* actividad y bloqueo automático */
+['pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll'].forEach(t => window.addEventListener(t, () => { last = Date.now(); }, {passive:true, capture:true}));
+const check = () => { if (started && mode && Date.now() - last > lockMin() * 60000) lockNow(); };
+setInterval(check, 5000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+window.addEventListener('pagehide', () => { if (saveT){ clearTimeout(saveT); saveT = null; persist(); } });
+
+/* pantalla de bloqueo */
+function showLock(){ document.documentElement.classList.add('locked'); setTimeout(() => { const i = $('#lockPw'); if (i) i.focus(); }, 50); }
+function hideLock(){ document.documentElement.classList.remove('locked'); }
+async function tryUnlock(start){
+  const pw = $('#lockPw').value, err = $('#lockErr'), btn = $('#lockGo');
+  if (!pw){ err.textContent = 'Escribe tu contraseña.'; return; }
+  btn.disabled = true; err.textContent = 'Verificando…';
+  try{
+    const v = JSON.parse(ls.get(VAULT));
+    const key = await derive(pw, unb64(v.salt), v.iter);
+    let obj;
+    try{ obj = await open(key, v); }
+    catch(e){
+      fails++; err.textContent = 'Contraseña incorrecta.';
+      const wait = Math.min(30, fails * 2); let n = wait;
+      btn.textContent = 'Espera ' + n + ' s';
+      const t = setInterval(() => { n--; if (n <= 0){ clearInterval(t); btn.disabled = false; btn.textContent = 'Entrar'; } else btn.textContent = 'Espera ' + n + ' s'; }, 1000);
+      $('#lockPw').value = '';
+      return;
+    }
+    MEM = obj; KEY = key; rec = {salt:v.salt, iter:v.iter}; fails = 0; last = Date.now();
+    $('#lockPw').value = ''; err.textContent = ''; btn.disabled = false;
+    hideLock(); started = true; refreshSecUI(); window.__ahedStart();
+  }catch(e){ err.textContent = 'No pude abrir los datos: ' + (e && e.message ? e.message : 'error'); btn.disabled = false; }
+}
+window.ahedBoot = function(){
+  if (!mode){ started = true; refreshSecUI(); window.__ahedStart(); return; }
+  showLock();
+};
+$('#lockGo').onclick = () => tryUnlock();
+$('#lockPw').addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+$('#lockWipe').onclick = () => {
+  if (!confirm('Esto borra TODOS los datos de Ahed de este dispositivo (compras, CDT, lista). No se puede deshacer. ¿Continuar?')) return;
+  if (!confirm('¿Seguro? Si tienes un respaldo, podrás cargarlo después.')) return;
+  SECURE.concat([VAULT]).forEach(k => ls.del(k));
+  try{ sessionStorage.clear(); }catch(e){}
+  reload();
+};
+
+/* diálogo de seguridad */
+const dlg = $('#dlgSec');
+function refreshSecUI(){
+  $('#secOff').hidden = mode; $('#secOn').hidden = !mode; $('#lockNow').hidden = !mode;
+  $('#secMin').value = String(lockMin());
+}
+const say = t => { $('#secOut').textContent = t; };
+$('#secBtn').onclick = () => { say(''); ['secNew', 'secNew2', 'secOld', 'secChgNew', 'secChgNew2', 'secRmPw'].forEach(i => { $('#' + i).value = ''; }); refreshSecUI(); dlg.showModal(); };
+$('#secClose').onclick = () => dlg.close();
+$('#lockNow').onclick = lockNow;
+$('#secLockNow').onclick = lockNow;
+$('#secMin').addEventListener('change', e => { ls.set('ahed_lock_min', e.target.value); say('Se bloqueará tras ' + e.target.value + ' min sin actividad.'); });
+$('#secOnBtn').onclick = async () => {
+  const p1 = $('#secNew').value, p2 = $('#secNew2').value;
+  if (p1.length < 10) return say('Usa al menos 10 caracteres. Una frase corta con espacios sirve.');
+  if (p1 !== p2) return say('Las contraseñas no coinciden.');
+  $('#secOnBtn').disabled = true; say('Cifrando tus datos…');
+  try{
+    const salt = rnd(16), key = await derive(p1, salt, ITER);
+    const data = {}; SECURE.forEach(k => { const v = ls.get(k); if (v != null) data[k] = v; });
+    MEM = data; KEY = key; rec = {salt:b64(salt), iter:ITER}; mode = true;
+    await persist();
+    if (!ls.get(VAULT)){ mode = false; MEM = null; KEY = null; return say('No pude guardar los datos cifrados (¿sin espacio en el navegador?). No se activó la contraseña.'); }
+    SECURE.forEach(k => ls.del(k));
+    try{ for (let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if (/^(h2\||fm\||trm\|)/.test(k)) ls.del(k); } }catch(e){}
+    last = Date.now(); refreshSecUI();
+    say('Listo. Tus datos están cifrados y la app se bloqueará sola. Si olvidas la contraseña no hay forma de recuperarlos: descarga un respaldo.');
+  } catch(e){ say('No pude activar la contraseña: ' + (e && e.message ? e.message : 'error')); }
+  finally { $('#secOnBtn').disabled = false; }
+};
+$('#secChg').onclick = async () => {
+  const o = $('#secOld').value, n1 = $('#secChgNew').value, n2 = $('#secChgNew2').value;
+  if (!(await verify(o))) return say('La contraseña actual no es correcta.');
+  if (n1.length < 10) return say('La nueva contraseña debe tener al menos 10 caracteres.');
+  if (n1 !== n2) return say('Las contraseñas nuevas no coinciden.');
+  say('Cambiando…');
+  const salt = rnd(16); KEY = await derive(n1, salt, ITER); rec = {salt:b64(salt), iter:ITER};
+  await persist(); say('Contraseña cambiada.');
+  ['secOld', 'secChgNew', 'secChgNew2'].forEach(i => { $('#' + i).value = ''; });
+};
+$('#secRm').onclick = async () => {
+  if (!(await verify($('#secRmPw').value))) return say('La contraseña no es correcta.');
+  if (!confirm('Tus datos volverán a guardarse sin cifrar en este navegador y la app dejará de bloquearse. ¿Continuar?')) return;
+  Object.keys(MEM || {}).forEach(k => ls.set(k, MEM[k]));
+  ls.del(VAULT); mode = false; KEY = null; MEM = null; refreshSecUI(); say('Contraseña quitada.');
+};
+
+/* arranque y service worker */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+window.ahedBoot();
+})();
 </script>
 </body>
 </html>
