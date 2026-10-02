@@ -1,6 +1,6 @@
-/* Ahed · service worker v16
+/* Ahed · service worker v17
    Red primero: siempre intenta traer la versión nueva y usa la copia guardada solo si no hay conexión. */
-const CACHE = 'ahed-v16';
+const CACHE = 'ahed-v17';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon-48.png'];
 
 self.addEventListener('install', e => {
