@@ -160,7 +160,7 @@ h1.brand img{border-radius:8px}
 .cmp-t{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0} .cmp-t th{font-weight:500;color:var(--mut);text-align:left;font-size:12px;padding:4px 6px 4px 0} .cmp-t td{padding:5px 6px 5px 0;border-top:1px solid var(--line)}
 .be{background:var(--panel2);border-left:3px solid var(--amber);border-radius:6px;padding:9px 12px;font-size:13px;line-height:1.5}
 .cdt-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0;border-top:1px solid var(--line)} .cdt-row:first-child{border-top:0} .cdt-row .cx{grid-column:1 / -1;justify-self:end}
-dialog:has(#cdtRows){max-width:560px;max-height:90vh;overflow:auto}
+dialog:has(#cdtName){max-width:520px;max-height:90vh;overflow:auto}
 select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--txt);font:inherit;font-size:14px}
 dialog label select,.lot-form select,.sc-row select{width:100%}
 .bro-new{margin-top:6px}
@@ -223,6 +223,12 @@ dialog:has(#secOff){max-width:520px;max-height:92vh;overflow:auto}
 .sum-split{display:flex;flex-wrap:wrap;gap:6px 24px;font-size:14px;color:var(--mut);margin:-6px 0 12px}
 .sum-split b{margin-left:6px;font-weight:600}
 .sum-ann{font-size:26px;font-weight:600;letter-spacing:-.4px;line-height:1.1}
+.perf{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:2px 0 18px}
+.perf .sec-h{margin:0 0 10px}
+#perfChart{display:block;touch-action:pan-y}
+.perf .cmp-t th,.perf .cmp-t td{text-align:right;padding-right:0;padding-left:8px}
+.perf .cmp-t th:first-child,.perf .cmp-t td:first-child{text-align:left;padding-left:0}
+.perf .cmp-t tr.sel td{background:var(--panel2)}
 @media (max-width:860px){.sum-sens{grid-template-columns:1fr}.ct-row{grid-template-columns:1fr auto;gap:6px}.ct-bar{grid-column:1 / -1;order:3}}
 @media (max-width:860px){.tools{grid-template-columns:1fr}}
 @media (max-width:860px){.sk-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
@@ -416,9 +422,9 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   <div class="sk-head">
     <div>
       <h2>Mis CDT</h2>
-      <div class="sub">Tus CDT como un solo grupo, aislado y en pesos colombianos: tasa fija, sin dólares. Si tienes varios, aquí ves su rentabilidad conjunta y la de cada uno.</div>
+      <div class="sub">Tus CDT como un solo grupo, aislado y en pesos colombianos: tasa fija, sin dólares. Agrega cada CDT por separado; si tienes varios, aquí ves su rentabilidad conjunta y la de cada uno.</div>
     </div>
-    <div class="sk-actions"><button class="btn" id="cdtEdit">Editar CDT</button></div>
+    <div class="sk-actions"><button class="btn primary" id="cdtNew">Agregar CDT</button></div>
   </div>
   <div id="cdtSummary"></div>
   <div id="cdtCards" class="cdt-grid"></div>
@@ -431,11 +437,18 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 </div>
 
 <dialog id="dlgCdt">
-  <h2>Mis CDT</h2>
-  <p>Un CDT por bloque. Tasa efectiva anual y fechas tal como aparecen en tu certificado. Se guarda solo en este navegador.</p>
-  <div id="cdtRows"></div>
+  <h2 id="cdtTitle">Agregar CDT</h2>
+  <p>Tasa efectiva anual y fechas tal como aparecen en tu certificado. Se guarda solo en este navegador.</p>
+  <div class="lot-form">
+    <label class="wide">Banco o nombre<input id="cdtName" autocomplete="off" placeholder="Ej. Bancolombia"></label>
+    <label>Capital (COP)<input id="cdtCap" inputmode="numeric" autocomplete="off" placeholder="50.000.000"></label>
+    <label>Tasa E.A. (%)<input id="cdtEa" inputmode="decimal" autocomplete="off" placeholder="11,5"></label>
+    <label>Inicio<input id="cdtStart" type="date"></label>
+    <label>Vencimiento<input id="cdtEnd" type="date"></label>
+    <label class="wide">Retención en la fuente (%)<input id="cdtRet" inputmode="decimal" autocomplete="off" value="4"></label>
+  </div>
   <div class="sub warnline" id="cdtErr" role="alert"></div>
-  <div class="dlg-b"><button class="btn" id="cdtAdd">Agregar CDT</button><button class="btn" id="cdtCancel">Cancelar</button><button class="btn" id="cdtSave">Guardar</button></div>
+  <div class="dlg-b"><button class="btn" id="cdtCancel">Cancelar</button><button class="btn primary" id="cdtSave">Guardar</button></div>
 </dialog>
 
 <dialog id="dlgPf">
@@ -531,7 +544,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 15.5.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 16.
 </p>
 
 <dialog id="dlg">
@@ -1744,6 +1757,8 @@ function loadCdt(){
 }
 let CDT = loadCdt();
 const saveCdt = () => { try{ vset(CDT_KEY, JSON.stringify(CDT)); }catch(e){} };
+const ensureCdtIds = () => { let ch = false; CDT.forEach(c => { if (!c.id){ c.id = uid(); ch = true; } }); return ch; };
+if (ensureCdtIds()) saveCdt();
 const bogKey = ts => new Intl.DateTimeFormat('en-CA', {timeZone:TZ}).format(ts);
 const dayMs = key => Date.parse(key + 'T00:00:00Z');
 const daysBetween = (a, b) => Math.round((dayMs(b) - dayMs(a)) / 86400000);
@@ -1793,7 +1808,7 @@ function equityCalc(){
 function drawCdt(){
   const g = cdtGroup(), sum = $('#cdtSummary');
   if (!g.n){
-    sum.innerHTML = '<div class="empty">Agrega tus CDT con "Editar CDT": banco, capital, tasa E.A. y fechas. Aquí verás la rentabilidad de todos tus CDT juntos, aislada y en pesos.</div>';
+    sum.innerHTML = '<div class="empty">Aún no tienes CDT cargados. Toca "Agregar CDT" y escribe banco, capital, tasa E.A. y fechas; repite con cada uno. Aquí verás la rentabilidad de todos tus CDT juntos, aislada y en pesos.</div>';
     $('#cdtCards').innerHTML = ''; return;
   }
   sum.innerHTML = `<div class="sum-hero">
@@ -1813,46 +1828,56 @@ function drawCdt(){
       <div class="cdt-nums">
         <div><span>Intereses netos a hoy</span><b class="up num">${copS(r.netAcc)}</b></div>
         <div><span>Recibirás al vencimiento</span><b class="num">${copF(r.final)}</b></div>
-      </div></article>`;
+      </div>
+      <div class="lot-b"><button type="button" class="btn sm" data-cedit="${esc(c.id)}">Editar</button><button type="button" class="btn sm" data-cdel="${esc(c.id)}">Borrar</button></div></article>`;
   }).join('');
 }
 
 let toolsInit = false;
 
-/* ---------- editor de CDT ---------- */
+/* ---------- agregar, editar y borrar un CDT (uno por uno) ---------- */
 const dlgCdt = $('#dlgCdt');
-function cdtRowHtml(c){
-  c = c || {};
-  return `<div class="cdt-row">
-    <label>Banco o nombre<input class="cn" value="${esc(c.name || '')}" placeholder="Ej. Bancolombia"></label>
-    <label>Capital (COP)<input class="cc" inputmode="numeric" value="${c.capital ? Math.round(c.capital).toLocaleString('es-CO') : ''}" placeholder="50.000.000"></label>
-    <label>Tasa E.A. (%)<input class="ce" inputmode="decimal" value="${c.ea ?? ''}" placeholder="11,5"></label>
-    <label>Inicio<input class="cs" type="date" value="${esc(c.start || '')}"></label>
-    <label>Vencimiento<input class="cv" type="date" value="${esc(c.end || '')}"></label>
-    <label>Retención (%)<input class="cr" inputmode="decimal" value="${c.ret ?? 4}"></label>
-    <button type="button" class="btn cx">Quitar</button></div>`;
-}
-$('#cdtEdit').onclick = () => {
-  $('#cdtRows').innerHTML = (CDT.length ? CDT : [null]).map(cdtRowHtml).join('');
+let editingCdt = null;
+function openCdt(c){
+  editingCdt = c ? c.id : null;
+  $('#cdtTitle').textContent = c ? 'Editar CDT' : 'Agregar CDT';
+  $('#cdtName').value = c ? (c.name || '') : '';
+  $('#cdtCap').value = c ? Math.round(c.capital).toLocaleString('es-CO') : '';
+  $('#cdtEa').value = c ? String(c.ea).replace('.', ',') : '';
+  $('#cdtStart').value = c ? c.start : bogKey(Date.now());
+  $('#cdtEnd').value = c ? c.end : '';
+  $('#cdtRet').value = c ? String(c.ret == null ? 4 : c.ret).replace('.', ',') : '4';
   $('#cdtErr').textContent = '';
   dlgCdt.showModal();
-};
-$('#cdtAdd').onclick = () => $('#cdtRows').insertAdjacentHTML('beforeend', cdtRowHtml());
-$('#cdtRows').addEventListener('click', e => { const b = e.target.closest('.cx'); if (b) b.closest('.cdt-row').remove(); });
+}
+function afterCdtChange(){
+  saveCdt(); toolsInit = false;
+  drawCdt();
+  if (!$('#viewSum').hidden) drawSum();
+}
+$('#cdtNew').onclick = () => openCdt(null);
 $('#cdtCancel').onclick = () => dlgCdt.close();
 $('#cdtSave').onclick = () => {
-  const out = [], bad = [];
-  document.querySelectorAll('#cdtRows .cdt-row').forEach((row, i) => {
-    const q = s => row.querySelector(s).value.trim();
-    const name = q('.cn'), capital = parseFloat(q('.cc').replace(/[^\d]/g, '')), ea = parseFloat(q('.ce').replace(',', '.')),
-          start = q('.cs'), end = q('.cv'), ret = parseFloat(q('.cr').replace(',', '.'));
-    if (!name && !q('.cc') && !q('.ce') && !start && !end) return;
-    if (!(capital > 0) || !(ea > 0) || !start || !end || end <= start){ bad.push(i + 1); return; }
-    out.push({name:name || 'CDT', capital, ea, start, end, ret: isFinite(ret) && ret >= 0 ? ret : 4});
-  });
-  if (bad.length){ $('#cdtErr').textContent = 'Revisa el CDT ' + bad.join(', ') + ': necesita capital, tasa, fecha de inicio y un vencimiento posterior.'; return; }
-  CDT = out; saveCdt(); toolsInit = false; dlgCdt.close(); drawCdt();
+  const err = m => { $('#cdtErr').textContent = m; };
+  const name = $('#cdtName').value.trim(), capital = parseFloat($('#cdtCap').value.replace(/[^\d]/g, '')), ea = parseFloat($('#cdtEa').value.trim().replace(',', '.')),
+        start = $('#cdtStart').value, end = $('#cdtEnd').value, ret = parseFloat($('#cdtRet').value.trim().replace(',', '.'));
+  if (!(capital > 0)) return err('Escribe el capital del CDT.');
+  if (!(ea > 0)) return err('Escribe la tasa efectiva anual, por ejemplo 11,5.');
+  if (!start) return err('Elige la fecha de inicio.');
+  if (!end || end <= start) return err('El vencimiento debe ser posterior al inicio.');
+  const o = {id:editingCdt || uid(), name:name || 'CDT', capital, ea, start, end, ret:(isFinite(ret) && ret >= 0) ? ret : 4};
+  const i = CDT.findIndex(x => x.id === o.id);
+  if (i >= 0) CDT[i] = o; else CDT.push(o);
+  dlgCdt.close(); afterCdtChange();
 };
+$('#cdtCards').addEventListener('click', e => {
+  const ed = e.target.closest('[data-cedit]'), del = e.target.closest('[data-cdel]');
+  if (ed){ const c = CDT.find(x => x.id === ed.dataset.cedit); if (c) openCdt(c); }
+  else if (del){
+    const c = CDT.find(x => x.id === del.dataset.cdel);
+    if (c && confirm(`¿Borrar el CDT "${c.name}"?`)){ CDT = CDT.filter(x => x.id !== c.id); afterCdtChange(); }
+  }
+});
 let qoT = 0;
 function qoRedraw(){
   if (!$('#viewCdt').hidden) drawCdt();
@@ -2097,7 +2122,7 @@ async function restoreFrom(txt){
   if (!confirm(`Esto reemplazará tus datos actuales por el respaldo (${j.lots.length} compras, ${(j.cdt || []).length} CDT). ¿Continuar?`)) return 'Cancelado.';
   LOTS = j.lots.filter(l => l && SYM_RE.test(l.sym) && l.qty > 0 && l.price > 0).map(l => ({id:l.id || uid(), sym:l.sym, kind:l.kind === 'crypto' ? 'crypto' : 'stock', broker:l.broker || '', date:l.date || '', qty:+l.qty, price:+l.price, fx:l.fx > 0 ? +l.fx : null, cop:l.cop > 0 ? +l.cop : null}));
   LOTS.forEach(l => { if (l.kind === 'crypto') CRYPTO.add(l.sym); });
-  CDT = Array.isArray(j.cdt) ? j.cdt : []; saveCdt(); toolsInit = false;
+  CDT = Array.isArray(j.cdt) ? j.cdt : []; ensureCdtIds(); saveCdt(); toolsInit = false;
   try{ vset(WATCH_KEY, JSON.stringify(Array.isArray(j.watch) ? j.watch : [])); }catch(e){}
   PF = loadPF(); syncPF(); savePF(); saveLots();
   Object.keys(W).forEach(k => delete W[k]); selSym = null;
@@ -2374,6 +2399,7 @@ function drawSum(){
       <div class="sum-big"><span>Patrimonio hoy</span><b class="num">${copF(c.val)}</b><small class="num">Invertido ${copF(c.inv)}</small></div>
       <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' acumulado nominal'}</small><small class="num ${c.real.all.gain >= 0 ? 'up' : 'dn'}">Real, en pesos de hoy: ${copS(c.real.all.gain)}${c.real.all.ret == null ? '' : ' (' + pctF(c.real.all.ret) + ')'}</small></div>
     </div>
+    <div id="perfSlot"></div>
     <h4 class="sec-h4">Cada grupo, aislado y en pesos</h4>
     <div class="cdt-grid sum-cards">
       ${classes.map(x => `<article class="cdt-card">
@@ -2397,6 +2423,7 @@ function drawSum(){
     ${best && worst && best !== worst ? `<div class="sub">Lo que más te aporta: <b>${esc(best[0])}</b>${worst[1] < 0 ? ` · Lo que más te resta: <b>${esc(worst[0])}</b>` : ''}.</div>` : ''}` : ''}
     <div class="sub sum-note">La rentabilidad anual se calcula con la fecha y el monto de cada compra y de cada CDT, para que cosas con edades distintas sean comparables. Cuando algo lleva menos de 6 meses, el número anual es una proyección de un periodo corto y puede ser extremo; úsalo solo como referencia. No incluye ventas, impuestos ni comisiones. No es asesoría financiera.</div>
     <div class="sub sum-note"><b>Rendimiento real:</b> es el nominal descontando la inflación (IPC total del DANE). Cada peso que invertiste se lleva a pesos de hoy según el IPC de su fecha de compra, y con eso se recalcula la ganancia y la tasa anual. Si tus compras sin fecha pesan mucho, el real las trata sin inflación y se queda corto. Las cifras mensuales de 2022 a 2024 se reparten parejo dentro de cada año (los totales anuales son los del DANE).</div>`;
+  perfAttach();
 }
 $('#sumBody').addEventListener('click', e => {
   const b = e.target.closest('[data-go]'); if (!b) return;
@@ -2413,6 +2440,251 @@ $('#sumHide').onclick = e => {
   e.currentTarget.textContent = on ? 'Mostrar montos' : 'Ocultar montos';
   e.currentTarget.setAttribute('aria-pressed', on);
 };
+
+/* ---------- Portafolio total vs S&P 500 ---------- */
+/* Cada día se valora lo que tenías ese día (precio y dólar de ese día; CDT con interés devengado).
+   La curva es de rentabilidad ponderada en el tiempo: una compra nueva no mueve la línea. */
+const PR_RANGES = ['1S', '1M', '3M', 'YTD', '1A', '5A'];
+const PERF = {el:document.createElement('div'), range:'1A', cur:'COP', ser:{}, busy:false, msg:'', sig:'', res:null, compT:0, miss:[]};
+PERF.el.className = 'perf';
+try{ const r = localStorage.getItem('perf_rng'), c = localStorage.getItem('perf_cur'); if (PR_RANGES.includes(r)) PERF.range = r; if (c === 'USD' || c === 'COP') PERF.cur = c; }catch(e){}
+const dnOf = k => Math.floor(Date.parse(k + 'T00:00:00Z') / DAY);
+const keyOfDn = dn => new Date(dn * DAY).toISOString().slice(0, 10);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const perfSig = () => JSON.stringify([LOTS.map(l => [l.sym, l.date, l.qty]), CDT.map(c => [c.capital, c.ea, c.start, c.end, c.ret])]);
+
+async function perfTdRetry(fn){
+  for (let a = 0; a < 4; a++){
+    try{ return await fn(); }
+    catch(e){
+      if (a === 3 || !/l[ií]mite|429|run out|credit|minute/i.test((e && e.message) || '')) throw e;
+      await sleep(Math.max(2000, tdCool - Date.now() + 500));
+    }
+  }
+}
+async function perfTD(sym){
+  const q = await tdGet(`https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym)}&interval=1day&outputsize=1330&order=asc&apikey=${encodeURIComponent(key('k_td'))}`);
+  if (q.status === 'error' || q.code){ if (q.code === 429) tdCool = Date.now() + 65000; throw new Error(q.message || 'error'); }
+  if (!q.values) throw new Error('sin datos');
+  return q.values.map(v => [dnOf(String(v.datetime).slice(0, 10)), +v.close]);
+}
+async function perfBin(pair){
+  let out = [], end = null;
+  for (let i = 0; i < 2; i++){
+    const k = await getJSON(`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=1d&limit=1000` + (end ? `&endTime=${end}` : ''), false);
+    if (!Array.isArray(k) || !k.length) break;
+    out = k.map(x => [Math.floor(x[0] / DAY), +x[4]]).concat(out);
+    end = k[0][0] - 1;
+    if (k.length < 1000) break;
+  }
+  return out;
+}
+async function perfYH(sym){
+  const d = await getJSON(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=5y`);
+  const r = d.chart.result[0], cl = r.indicators.quote[0].close || [];
+  return (r.timestamp || []).map((t, i) => [Math.floor(t / 86400), cl[i]]);
+}
+function packSeries(rows){
+  const m = new Map();
+  rows.forEach(([d, c]) => { if (isFinite(d) && isFinite(c) && c > 0) m.set(d, c); });
+  const ds = [...m.keys()].sort((a, b) => a - b);
+  return {d:ds, c:ds.map(d => Math.round(m.get(d) * 1e4) / 1e4)};
+}
+function perfTries(id){
+  const td = s => key('k_td') ? [() => perfTdRetry(() => perfTD(s))] : [];
+  if (id === 'FX') return [...td('USD/COP'), () => perfYH('COP=X')];
+  if (id === 'SPX') return [...td('SPY'), () => perfYH('^GSPC'), ...td('VOO')];
+  if (isCrypto(id)) return [() => perfBin(id + 'USDT'), () => perfYH(id + '-USD')];
+  return [...td(id), () => perfYH(id)];
+}
+async function perfSeries(id){
+  const ck = 'pf5|' + id, c = cacheGet(ck, 6 * 3600e3);
+  if (c && c.d && c.d.length > 5) return c;
+  let last;
+  for (const f of perfTries(id)){
+    try{ const s = packSeries(await f()); if (s.d.length > 5){ cacheSet(ck, s); return s; } }
+    catch(e){ last = e; }
+  }
+  throw last || new Error('sin datos');
+}
+async function perfStart(){
+  if (PERF.busy) return;
+  PERF.busy = true; PERF.sig = perfSig(); PERF.miss = [];
+  const syms = [...new Set(LOTS.filter(l => l.date).map(l => l.sym))];
+  const ids = ['FX', 'SPX', ...syms.filter(isCrypto), ...syms.filter(s => !isCrypto(s))];
+  try{
+    for (let i = 0; i < ids.length; i++){
+      PERF.msg = `Cargando historial ${i + 1}/${ids.length} (${ids[i] === 'SPX' ? 'S&P 500' : ids[i] === 'FX' ? 'dólar' : ids[i]})…`;
+      perfDraw();
+      try{ PERF.ser[ids[i]] = await perfSeries(ids[i]); }
+      catch(e){ delete PERF.ser[ids[i]]; PERF.miss.push(ids[i]); }
+    }
+  } finally { PERF.busy = false; PERF.msg = ''; }
+  perfRecompute();
+}
+function perfRecompute(){
+  try{ PERF.res = perfCompute(); }catch(e){ PERF.res = {err:'No pude calcular la comparación: ' + ((e && e.message) || 'error')}; }
+  PERF.compT = Date.now(); perfDraw();
+}
+function fillSeries(s, d0, n){
+  const out = new Float64Array(n).fill(NaN);
+  let j = 0, last = NaN;
+  for (let i = 0; i < n; i++){
+    const day = d0 + i;
+    while (j < s.d.length && s.d[j] <= day){ last = s.c[j]; j++; }
+    out[i] = last;
+  }
+  let k = 0; while (k < n && !isFinite(out[k])) k++;
+  return {a:out, lead:k};
+}
+function perfCompute(){
+  const fxS = PERF.ser.FX, spS = PERF.ser.SPX;
+  if (!fxS || !spS) return {err:'No pude cargar el historial ' + (!fxS ? 'del dólar' : 'del S&P 500') + '. Revisa tus claves (botón Claves) o tu conexión y reintenta.'};
+  const today = dnOf(bogKey(Date.now()));
+  const lots = LOTS.filter(l => l.date && PERF.ser[l.sym] && dnOf(l.date) <= today);
+  const skipped = LOTS.filter(l => !lots.includes(l));
+  let first = Infinity;
+  lots.forEach(l => { first = Math.min(first, dnOf(l.date)); });
+  CDT.forEach(c => { first = Math.min(first, dnOf(c.start)); });
+  if (!isFinite(first) || first > today) return {empty:true, skipped};
+  const d0 = Math.max(first, today - 1840), n = today - d0 + 1;
+  const F0 = fillSeries(fxS, d0, n), fx = F0.a;
+  if (F0.lead >= n) return {err:'El historial del dólar no cubre el periodo.'};
+  for (let i = 0; i < F0.lead; i++) fx[i] = fx[F0.lead];
+  if (S.usdcop.price) fx[n - 1] = S.usdcop.price;
+  const P0 = fillSeries(spS, d0, n), spx = P0.a;
+  if (P0.lead >= n) return {err:'El historial del S&P 500 no cubre el periodo.'};
+  for (let i = 0; i < P0.lead; i++) spx[i] = spx[P0.lead];
+  if (n >= 2 && usOpen() && S.voo.pct != null) spx[n - 1] = spx[n - 2] * (1 + S.voo.pct / 100);
+  const pxs = {};
+  lots.forEach(l => {
+    if (pxs[l.sym]) return;
+    const a = fillSeries(PERF.ser[l.sym], d0, n).a, live = pxOf(l.sym);
+    if (live) a[n - 1] = live;
+    pxs[l.sym] = a;
+  });
+  const V = new Float64Array(n), Fl = new Float64Array(n);
+  lots.forEach(l => {
+    const s = Math.max(0, dnOf(l.date) - d0), a = pxs[l.sym];
+    for (let i = s; i < n; i++){
+      const p = isFinite(a[i]) ? a[i] : l.price, v = l.qty * p * fx[i];
+      V[i] += v; if (i === s) Fl[i] += v;
+    }
+  });
+  const keys = Array.from({length:n}, (_, i) => keyOfDn(d0 + i));
+  CDT.forEach(c => {
+    const s = Math.max(0, dnOf(c.start) - d0);
+    if (s >= n) return;
+    for (let i = s; i < n; i++){
+      const v = cdtCalc(c, keys[i]).now;
+      V[i] += v; if (i === s) Fl[i] += v;
+    }
+  });
+  const twr = div => {
+    const idx = new Float64Array(n).fill(NaN); let prev = 0;
+    for (let i = 0; i < n; i++){
+      const d = div ? div[i] : 1, v = V[i] / d, f = Fl[i] / d;
+      if (!(prev > 0)) idx[i] = v > 0 ? 100 : NaN;
+      else idx[i] = idx[i - 1] * ((v - f) / prev);
+      prev = v;
+    }
+    return idx;
+  };
+  const spCOP = new Float64Array(n); for (let i = 0; i < n; i++) spCOP[i] = spx[i] * fx[i];
+  return {d0, n, today, idxCOP:twr(null), idxUSD:twr(fx), spCOP, spUSD:spx, skipped, missing:PERF.miss.filter(m => m !== 'FX' && m !== 'SPX')};
+}
+function perfStartDn(R, today){
+  const y = +keyOfDn(today).slice(0, 4);
+  return {'1S':today - 7, '1M':today - 30, '3M':today - 91, 'YTD':dnOf((y - 1) + '-12-31'), '1A':today - 365, '5A':today - 1826}[R];
+}
+function perfWin(res, R, cur){
+  const port = cur === 'USD' ? res.idxUSD : res.idxCOP, bench = cur === 'USD' ? res.spUSD : res.spCOP;
+  const inc = port.findIndex(x => isFinite(x)); if (inc < 0) return null;
+  const want = perfStartDn(R, res.today) - res.d0;
+  const s = Math.max(want, 0, inc), last = res.n - 1;
+  if (last - s < 1) return null;
+  const p0 = port[s], b0 = bench[s];
+  if (!(p0 > 0) || !(b0 > 0)) return null;
+  return {s, clipped:s > want, from:res.d0 + s, p:port[last] / p0 - 1, b:bench[last] / b0 - 1, port, bench, p0, b0};
+}
+function perfDraw(){
+  const el = PERF.el, res = PERF.res;
+  const head = `<div class="sec-h"><h4 class="sec-h4" style="margin:0">Tu portafolio vs el S&amp;P 500</h4>
+    <span class="seg" role="group" aria-label="Moneda de la comparación"><button data-pcur="COP" aria-pressed="${PERF.cur === 'COP'}">Pesos</button><button data-pcur="USD" aria-pressed="${PERF.cur === 'USD'}">Dólares</button></span></div>`;
+  if (PERF.busy){ el.innerHTML = head + `<div class="sub" role="status">${esc(PERF.msg || 'Cargando historial…')} La primera vez tarda hasta un minuto; después queda guardado.</div>`; return; }
+  if (!res){ el.innerHTML = head + '<div class="sub">Preparando…</div>'; return; }
+  if (res.err){ el.innerHTML = head + `<div class="sub warnline">${esc(res.err)}</div><button class="btn sm" data-perf="retry">Reintentar</button>`; return; }
+  if (res.empty){ el.innerHTML = head + `<div class="sub">Para ver la comparación necesito compras con fecha o un CDT.</div>`; return; }
+  const last = res.n - 1, w = perfWin(res, PERF.range, PERF.cur);
+  const rows = PR_RANGES.map(R => ({R, w:perfWin(res, R, PERF.cur)}));
+  let chart, pp = null, bb = null, geo = null;
+  if (w){
+    const cnt = last - w.s + 1;
+    pp = new Float64Array(cnt); bb = new Float64Array(cnt);
+    let mn = 0, mx = 0;
+    for (let k = 0; k < cnt; k++){
+      pp[k] = w.port[w.s + k] / w.p0 - 1; bb[k] = w.bench[w.s + k] / w.b0 - 1;
+      mn = Math.min(mn, pp[k], bb[k]); mx = Math.max(mx, pp[k], bb[k]);
+    }
+    const pad = (mx - mn) * 0.08 || 0.01; mn -= pad; mx += pad;
+    const Wd = 560, Ht = 240, ml = 8, mr = 52, mt = 10, mb = 22;
+    const X = k => ml + (cnt < 2 ? 0 : k / (cnt - 1)) * (Wd - ml - mr), Y = v => mt + (1 - (v - mn) / (mx - mn)) * (Ht - mt - mb);
+    const dec = (mx - mn) < 0.06 ? 1 : 0;
+    const path = a => { let d = ''; for (let k = 0; k < cnt; k++) d += (k ? 'L' : 'M') + X(k).toFixed(1) + ',' + Y(a[k]).toFixed(1); return d; };
+    geo = {X, Y, Wd, ml, mr, cnt};
+    chart = `<svg id="perfChart" viewBox="0 0 ${Wd} ${Ht}" width="100%" role="img" aria-label="Rentabilidad del portafolio contra el S&P 500">
+      ${[mx - pad, mn + pad].map(v => `<line x1="${ml}" x2="${Wd - mr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)" opacity=".6"/><text x="${Wd - mr + 6}" y="${(Y(v) + 4).toFixed(1)}" font-size="11" fill="var(--mut)">${pctF(v, dec)}</text>`).join('')}
+      <line x1="${ml}" x2="${Wd - mr}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="var(--mut)" stroke-dasharray="3 4" opacity=".7"/><text x="${Wd - mr + 6}" y="${(Y(0) + 4).toFixed(1)}" font-size="11" fill="var(--mut)">0%</text>
+      <path d="${path(bb)}" fill="none" stroke="var(--blue)" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="${path(pp)}" fill="none" stroke="var(--amber)" stroke-width="2.1" stroke-linejoin="round"/>
+      <text x="${ml}" y="${Ht - 6}" font-size="11" fill="var(--mut)">${esc(dateLab(keyOfDn(w.from)))}</text>
+      <text x="${Wd - mr}" y="${Ht - 6}" text-anchor="end" font-size="11" fill="var(--mut)">${esc(dateLab(keyOfDn(res.today)))}</text>
+      <line id="perfL" y1="${mt}" y2="${Ht - mb}" stroke="var(--mut)" opacity="0"/>
+      <circle id="perfCp" r="4" fill="var(--amber)" opacity="0"/><circle id="perfCb" r="4" fill="var(--blue)" opacity="0"/>
+      <rect id="perfR" x="${ml}" y="${mt}" width="${Wd - ml - mr}" height="${Ht - mt - mb}" fill="transparent"/></svg>`;
+  } else chart = '<div class="empty">Todavía hay muy poco historial para este periodo.</div>';
+  const cell = v => v == null ? '—' : `<span class="${v >= 0 ? 'up' : 'dn'}">${pctF(v, 1)}</span>`;
+  const anyClip = rows.find(r => r.w && r.w.clipped);
+  const table = `<table class="cmp-t"><tr><th>Periodo</th><th>Tu portafolio</th><th>S&amp;P 500</th><th>Diferencia</th></tr>
+    ${rows.map(({R, w: x}) => `<tr class="${R === PERF.range ? 'sel' : ''}"><td>${R}${x && x.clipped ? '*' : ''}</td><td>${x ? cell(x.p) : '—'}</td><td>${x ? cell(x.b) : '—'}</td><td>${x ? `<span class="${x.p - x.b >= 0 ? 'up' : 'dn'}">${(x.p - x.b >= 0 ? '+' : '') + ((x.p - x.b) * 100).toFixed(1)} pp</span>` : '—'}</td></tr>`).join('')}</table>`;
+  const warns = [];
+  if (res.skipped.length) warns.push(`${res.skipped.length} compra(s) no entran en la gráfica (sin fecha o sin historial de precios${res.missing.length ? ': ' + res.missing.join(', ') : ''})`);
+  el.innerHTML = head + `
+    <div class="d-rng" role="group" aria-label="Periodo">${PR_RANGES.map(r => `<button data-prange="${r}" aria-pressed="${PERF.range === r}">${r}</button>`).join('')}<span id="perfHv" class="hv"></span></div>
+    ${chart}
+    ${w ? `<div class="legend"><span><i style="background:var(--amber)"></i>Tu portafolio <b class="${w.p >= 0 ? 'up' : 'dn'}">${pctF(w.p, 1)}</b></span><span><i style="background:var(--blue)"></i>S&amp;P 500 <b class="${w.b >= 0 ? 'up' : 'dn'}">${pctF(w.b, 1)}</b></span></div>` : ''}
+    ${table}
+    ${anyClip ? `<div class="sub">* Tu primera inversión es del ${esc(dateLab(keyOfDn(anyClip.w.from)))}: en esos periodos se compara desde esa fecha.</div>` : ''}
+    ${warns.length ? `<div class="sub warnline">${warns.map(esc).join(' · ')}</div>` : ''}
+    <div class="sub" style="margin-top:8px">Cada día valora lo que tenías ese día con su precio y el dólar de ese día; los CDT suman su interés neto día a día. Una compra nueva no mueve la línea: solo cuenta cómo rindió lo que ya tenías. ${PERF.cur === 'COP' ? 'El S&amp;P 500 también está en pesos, con el efecto del dólar.' : 'En dólares, tus CDT pierden o ganan según el dólar.'} El S&amp;P 500 es el ETF SPY (precio, sin dividendos, igual que tus acciones y cripto). No incluye ventas ni comisiones.</div>`;
+  if (geo){
+    const svg = el.querySelector('#perfChart'), r = el.querySelector('#perfR'), L = el.querySelector('#perfL'), Cp = el.querySelector('#perfCp'), Cb = el.querySelector('#perfCb'), T = el.querySelector('#perfHv');
+    const move = ev => {
+      const bbx = svg.getBoundingClientRect(), x = (ev.clientX - bbx.left) / bbx.width * geo.Wd;
+      const k = clamp(Math.round((x - geo.ml) / (geo.Wd - geo.ml - geo.mr) * (geo.cnt - 1)), 0, geo.cnt - 1), px = geo.X(k);
+      L.setAttribute('x1', px); L.setAttribute('x2', px); L.setAttribute('opacity', '.6');
+      Cp.setAttribute('cx', px); Cp.setAttribute('cy', geo.Y(pp[k])); Cp.setAttribute('opacity', '1');
+      Cb.setAttribute('cx', px); Cb.setAttribute('cy', geo.Y(bb[k])); Cb.setAttribute('opacity', '1');
+      T.textContent = `${dateLab(keyOfDn(w.from + k))} · Tú ${pctF(pp[k], 1)} · S&P ${pctF(bb[k], 1)}`;
+    };
+    r.addEventListener('pointermove', move); r.addEventListener('pointerdown', move);
+    r.addEventListener('pointerleave', () => { L.setAttribute('opacity', '0'); Cp.setAttribute('opacity', '0'); Cb.setAttribute('opacity', '0'); T.textContent = ''; });
+  }
+}
+PERF.el.addEventListener('click', e => {
+  const r = e.target.closest('[data-prange]'), c = e.target.closest('[data-pcur]'), t = e.target.closest('[data-perf]');
+  if (r){ PERF.range = r.dataset.prange; try{ localStorage.setItem('perf_rng', PERF.range); }catch(err){} perfDraw(); }
+  else if (c){ PERF.cur = c.dataset.pcur; try{ localStorage.setItem('perf_cur', PERF.cur); }catch(err){} perfDraw(); }
+  else if (t){ PERF.sig = ''; PERF.res = null; perfStart(); }
+});
+function perfAttach(){
+  const slot = $('#perfSlot'); if (slot) slot.replaceWith(PERF.el);
+  const has = LOTS.some(l => l.date) || CDT.length > 0;
+  PERF.el.hidden = !has;
+  if (!has || PERF.busy) return;
+  if (perfSig() !== PERF.sig){ perfStart(); return; }
+  if (PERF.res && !PERF.res.err && Date.now() - PERF.compT > 120000) perfRecompute();
+}
 
 /* ---------- ciclo ---------- */
 A.forEach(a => render(a));
@@ -2575,7 +2847,7 @@ $('#secOnBtn').onclick = async () => {
     await persist();
     if (!ls.get(VAULT)){ mode = false; MEM = null; KEY = null; return say('No pude guardar los datos cifrados (¿sin espacio en el navegador?). No se activó la contraseña.'); }
     SECURE.forEach(k => ls.del(k));
-    try{ for (let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if (/^(h2\||fm\||trm\|)/.test(k)) ls.del(k); } }catch(e){}
+    try{ for (let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if (/^(h2\||fm\||trm\||pf5\|)/.test(k)) ls.del(k); } }catch(e){}
     last = Date.now(); refreshSecUI();
     say('Listo. Tus datos están cifrados y la app se bloqueará sola. Si olvidas la contraseña no hay forma de recuperarlos: descarga un respaldo.');
   } catch(e){ say('No pude activar la contraseña: ' + (e && e.message ? e.message : 'error')); }
