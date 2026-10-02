@@ -308,8 +308,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
     <span class="clock">Nueva York <b id="clkNY">--:--</b></span>
     <span class="pill" id="mkt"><span class="dot"></span><span id="mktTxt">Mercado EE.UU.</span></span>
     <button class="btn" id="lockNow" hidden>Bloquear</button>
-    <button class="btn" id="secBtn">Seguridad</button>
-    <button class="btn" id="keysBtn">Claves</button>
+    <button class="btn" id="secBtn">Ajustes</button>
     <button class="btn" id="refresh">Actualizar</button>
   </div>
 </header>
@@ -499,7 +498,8 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 </dialog>
 
 <dialog id="dlgSec">
-  <h2>Seguridad</h2>
+  <h2>Ajustes</h2>
+  <h4 class="sec-h4">Contraseña de Ahed</h4>
   <div id="secOff">
     <p>Pon una contraseña para proteger tus datos. Tus compras, CDT y lista de vigilancia se guardan <b>cifrados</b> en este dispositivo, y Ahed se bloquea sola después de unos minutos sin usarla.</p>
     <p class="sub warnline">Si olvidas la contraseña no hay forma de recuperar los datos. Antes de activarla, descarga un respaldo con el botón Respaldo (en Acciones y ETF o en Cripto).</p>
@@ -542,20 +542,11 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 </dialog>
 
 <p class="note">
-  Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP) con tus claves gratuitas; sin claves intenta Yahoo Finance, que el navegador suele bloquear.
+  Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP); si alguno falla intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 16.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 17.
 </p>
 
-<dialog id="dlg">
-  <h2>Claves gratuitas</h2>
-  <p>Los navegadores bloquean Yahoo Finance, así que para precios estables usa estas dos claves gratis. Se guardan solo en este navegador.</p>
-  <label for="kFh">Finnhub (VOO, QQQ, VGT en tiempo real) · <a href="https://finnhub.io/register" target="_blank" rel="noopener">crear clave</a></label>
-  <input id="kFh" autocomplete="off" spellcheck="false" placeholder="Pega tu API key">
-  <label for="kTd">Twelve Data (dólar USD/COP) · <a href="https://twelvedata.com/register" target="_blank" rel="noopener">crear clave</a></label>
-  <input id="kTd" autocomplete="off" spellcheck="false" placeholder="Pega tu API key">
-  <div class="dlg-b"><button class="btn" id="kCancel">Cancelar</button><button class="btn" id="kSave">Guardar</button></div>
-</dialog>
 
 <script>
 window.__ahedStart = function(){
@@ -723,7 +714,7 @@ async function loadYahoo(a){
     render(a, old != null ? Math.sign(s.price - old) : 0);
   }catch(e){
     if (a.id === 'usdcop') return loadFXFallback(a);
-    if (s.price == null) s.err = 'Yahoo Finance está bloqueado por el navegador. Toca "Claves" y agrega una clave gratuita.'; render(a);
+    if (s.price == null) s.err = 'No pude cargar este precio ahora. Toca Actualizar en unos minutos.'; render(a);
   }
 }
 async function loadFXFallback(a){
@@ -1919,7 +1910,7 @@ function drawGroup(k){
   if (g.noDate) warn.push(`${g.noDate} compra(s) sin fecha: no entran en la rentabilidad anual`);
   if (missing.length && missing.length < entries.length) warn.push(`Sin precio todavía: ${missing.join(', ')}. No entran en los totales hasta que cargue su cotización`);
   if (missing.length === entries.length){
-    box.innerHTML = `<div class="empty">Todavía no tengo el precio de ${esc(missing.join(', '))}, por eso los totales aparecen en cero. Suele ser cuestión de unos segundos; si no carga, revisa tus claves (botón Claves) o tu conexión.
+    box.innerHTML = `<div class="empty">Todavía no tengo el precio de ${esc(missing.join(', '))}, por eso los totales aparecen en cero. Suele ser cuestión de unos segundos; si no carga, toca Actualizar o revisa tu conexión.
       <div class="sum-cta"><button class="btn primary" data-act="retry">Reintentar precios</button></div></div>`;
     bBox.innerHTML = '';
   } else
@@ -2392,6 +2383,7 @@ function drawSum(){
   const best = contrib.slice().sort((a, b) => b[1] - a[1])[0], worst = contrib.slice().sort((a, b) => a[1] - b[1])[0];
   const miss = Object.keys(AGG).filter(sym => !pxOf(sym));
   box.innerHTML = `
+    <div id="perfSlot"></div>
     ${miss.length ? `<div class="sub warnline">Sin precio todavía: ${esc(miss.join(', '))}. No entra en los totales hasta que cargue su cotización. <button class="btn sm" data-act="retry">Reintentar</button></div>` : ''}
     <div class="sum-hero">
       <div class="sum-big"><span>Rentabilidad anual nominal</span><b class="${c.ann == null ? '' : (c.ann >= 0 ? 'up' : 'dn')}">${annF(c.ann)}</b><small>${esc(annNote(c.young, c.hasDates))}</small></div>
@@ -2399,7 +2391,6 @@ function drawSum(){
       <div class="sum-big"><span>Patrimonio hoy</span><b class="num">${copF(c.val)}</b><small class="num">Invertido ${copF(c.inv)}</small></div>
       <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' acumulado nominal'}</small><small class="num ${c.real.all.gain >= 0 ? 'up' : 'dn'}">Real, en pesos de hoy: ${copS(c.real.all.gain)}${c.real.all.ret == null ? '' : ' (' + pctF(c.real.all.ret) + ')'}</small></div>
     </div>
-    <div id="perfSlot"></div>
     <h4 class="sec-h4">Cada grupo, aislado y en pesos</h4>
     <div class="cdt-grid sum-cards">
       ${classes.map(x => `<article class="cdt-card">
@@ -2539,7 +2530,7 @@ function fillSeries(s, d0, n){
 }
 function perfCompute(){
   const fxS = PERF.ser.FX, spS = PERF.ser.SPX;
-  if (!fxS || !spS) return {err:'No pude cargar el historial ' + (!fxS ? 'del dólar' : 'del S&P 500') + '. Revisa tus claves (botón Claves) o tu conexión y reintenta.'};
+  if (!fxS || !spS) return {err:'No pude cargar el historial ' + (!fxS ? 'del dólar' : 'del S&P 500') + '. Revisa tu conexión y reintenta.'};
   const today = dnOf(bogKey(Date.now()));
   const lots = LOTS.filter(l => l.date && PERF.ser[l.sym] && dnOf(l.date) <= today);
   const skipped = LOTS.filter(l => !lots.includes(l));
@@ -2701,13 +2692,6 @@ async function all(force){
   loadCal(force);
 }
 $('#refresh').onclick = () => { S.usdcop.last = 0; all(true); };
-const dlg = $('#dlg');
-$('#keysBtn').onclick = () => { $('#kFh').value = key('k_fh'); $('#kTd').value = key('k_td'); dlg.showModal(); };
-$('#kCancel').onclick = () => dlg.close();
-$('#kSave').onclick = () => {
-  try{ localStorage.setItem('k_fh', $('#kFh').value.trim()); localStorage.setItem('k_td', $('#kTd').value.trim()); }catch(e){}
-  dlg.close(); S.usdcop.last = 0; S.usdcop.serT = 0; refreshPrices();
-};
 setInterval(tickClock, 1000); tickClock();
 setInterval(() => { if (!document.hidden) refreshPrices(); }, 30000);
 setInterval(() => { if (!document.hidden && !S.btc.ws) loadBTC(); }, 30000);
