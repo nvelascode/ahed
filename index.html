@@ -229,6 +229,23 @@ dialog:has(#secOff){max-width:520px;max-height:92vh;overflow:auto}
 .perf .cmp-t th,.perf .cmp-t td{text-align:right;padding-right:0;padding-left:8px}
 .perf .cmp-t th:first-child,.perf .cmp-t td:first-child{text-align:left;padding-left:0}
 .perf .cmp-t tr.sel td{background:var(--panel2)}
+.sum-tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.alert{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px;padding:10px 14px;border-radius:var(--r);border:1px solid var(--line);border-left:3px solid var(--blue);background:var(--panel);font-size:13.5px;line-height:1.5}
+.alert.amber{border-left-color:var(--amber)} .alert.red{border-left-color:var(--dn)} .alert.gray{border-left-color:var(--mut)}
+.goal{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:18px;display:flex;flex-direction:column;gap:8px}
+.goal-n{font-size:24px;font-weight:600;letter-spacing:-.3px}
+.cc-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.cc-stats div{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cc-stats span{font-size:12px;color:var(--mut)} .cc-stats b{font-size:18px;font-weight:600;overflow-wrap:anywhere} .cc-stats small{font-size:11.5px;color:var(--mut)}
+.tbl-wrap{overflow-x:auto;margin:6px 0}
+.tbl-wrap .cmp-t{min-width:520px}
+.lot-form .ck{flex-direction:row;align-items:center;gap:8px;color:var(--txt);font-size:13.5px}
+.lot-form .ck input{width:18px;height:18px;padding:0;flex:none}
+dialog:has(#ccOut),dialog:has(#rtOut){max-width:640px;max-height:92vh;overflow:auto}
+.ai-box{margin:10px 0;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.ai-txt{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:var(--r);padding:10px 12px;width:100%}
+.ai-txt p{margin:0 0 8px;font-size:13.5px;line-height:1.55} .ai-txt p:last-child{margin-bottom:0}
 @media (max-width:860px){.sum-sens{grid-template-columns:1fr}.ct-row{grid-template-columns:1fr auto;gap:6px}.ct-bar{grid-column:1 / -1;order:3}}
 @media (max-width:860px){.tools{grid-template-columns:1fr}}
 @media (max-width:860px){.sk-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
@@ -330,6 +347,11 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
     </div>
     <div class="sk-actions"><span class="pill" id="sumFx">Dólar —</span><button class="btn" id="sumHide" aria-pressed="false">Ocultar montos</button></div>
   </div>
+  <div class="sum-tools">
+    <button class="btn" id="toolCalc">Calculadora de interés compuesto</button>
+    <button class="btn" id="toolGoal">Meta de patrimonio</button>
+    <button class="btn" id="toolRenta">Informe para renta</button>
+  </div>
   <div id="sumBody"></div>
   <div class="sub infl-row">Inflación: IPC del DANE hasta agosto de 2026 (6,24% anual). Para los meses que el DANE aún no publica, asumo <input id="inflFwd" type="number" step="0.1" min="-5" max="100" inputmode="decimal" aria-label="Inflación anual asumida"> % anual.</div>
 </div>
@@ -423,7 +445,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
       <h2>Mis CDT</h2>
       <div class="sub">Tus CDT como un solo grupo, aislado y en pesos colombianos: tasa fija, sin dólares. Agrega cada CDT por separado; si tienes varios, aquí ves su rentabilidad conjunta y la de cada uno.</div>
     </div>
-    <div class="sk-actions"><button class="btn primary" id="cdtNew">Agregar CDT</button></div>
+    <div class="sk-actions"><button class="btn primary" id="cdtNew">Agregar CDT</button><button class="btn" id="cdtIcsAll">Recordatorios en mi calendario</button></div>
   </div>
   <div id="cdtSummary"></div>
   <div id="cdtCards" class="cdt-grid"></div>
@@ -448,6 +470,42 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
   </div>
   <div class="sub warnline" id="cdtErr" role="alert"></div>
   <div class="dlg-b"><button class="btn" id="cdtCancel">Cancelar</button><button class="btn primary" id="cdtSave">Guardar</button></div>
+</dialog>
+
+<dialog id="dlgCalc">
+  <h2>Calculadora de interés compuesto</h2>
+  <p>Mira cuánto crece una inversión con el tiempo. Cambia cualquier cifra y el resultado se actualiza solo.</p>
+  <div class="lot-form">
+    <label>Capital inicial (COP)<input id="ccCap" inputmode="numeric" autocomplete="off"></label>
+    <label>Aporte mensual (COP)<input id="ccAp" inputmode="numeric" autocomplete="off"></label>
+    <label>Tasa E.A. (%)<input id="ccRate" inputmode="decimal" autocomplete="off"></label>
+    <label>Plazo (años)<input id="ccYears" inputmode="decimal" autocomplete="off"></label>
+    <label class="wide">Inflación anual supuesta (%)<input id="ccInf" inputmode="decimal" autocomplete="off"></label>
+  </div>
+  <div class="bk-row"><button type="button" class="btn sm" id="ccUseMine">Usar mi patrimonio y mi rentabilidad</button></div>
+  <div id="ccOut"></div>
+  <div class="dlg-b"><button class="btn" id="ccClose">Cerrar</button></div>
+</dialog>
+
+<dialog id="dlgGoal">
+  <h2>Meta de patrimonio</h2>
+  <p>Dime cuánto quieres tener y para cuándo. Ahed calcula cuánto necesitas aportar cada mes con la rentabilidad que supongas.</p>
+  <div class="lot-form">
+    <label class="wide">Meta (COP)<input id="glAmt" inputmode="numeric" autocomplete="off" placeholder="500.000.000"></label>
+    <label>Fecha objetivo<input id="glDate" type="date"></label>
+    <label>Rentabilidad esperada E.A. (%)<input id="glRate" inputmode="decimal" autocomplete="off"></label>
+    <label class="wide ck"><input type="checkbox" id="glReal">La meta está en pesos de hoy (descontar la inflación)</label>
+  </div>
+  <div class="sub warnline" id="glErr" role="alert"></div>
+  <div class="dlg-b"><button class="btn" id="glDel" hidden>Quitar meta</button><button class="btn" id="glCancel">Cancelar</button><button class="btn primary" id="glSave">Guardar</button></div>
+</dialog>
+
+<dialog id="dlgRenta">
+  <h2>Informe para la declaración de renta</h2>
+  <p>Tus activos en el exterior y tus CDT al 31 de diciembre del año que elijas, listos para llevar a tu contador.</p>
+  <label>Año gravable<select id="rtYear"></select></label>
+  <div id="rtOut"></div>
+  <div class="dlg-b"><button class="btn" id="rtClose">Cerrar</button><button class="btn primary" id="rtXlsx" disabled>Descargar Excel</button></div>
 </dialog>
 
 <dialog id="dlgPf">
@@ -544,7 +602,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP); si alguno falla intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 17.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 18.
 </p>
 
 
@@ -1611,6 +1669,8 @@ function drawDetail(){
     ['Margen neto', numF(m.netProfitMarginTTM, 1, '%')],
     ['Capitalización', (m.marketCapitalization && isFinite(m.marketCapitalization)) ? '$ ' + (m.marketCapitalization / 1000).toLocaleString('en-US', {maximumFractionDigits:0}) + ' mil M' : null]
   ].filter(f => f[1] != null).map(f => `<div class="fact"><span>${esc(f[0])}</span><b>${f[1]}</b></div>`).join('');
+  const ai = w.ai || {};
+  const aiBox = `<div class="ai-box">${ai.text ? `<div class="ai-txt">${aiHtml(ai.text)}</div><div class="sub">Generado con IA a partir de los números de esta ficha. Informativo; no es una recomendación.</div>` : ''}${ai.err ? `<div class="sub warnline">${esc(ai.err)}</div>` : ''}<button type="button" class="btn sm" data-ai="explain" ${ai.busy ? 'disabled' : ''}>${ai.busy ? 'Pensando…' : ai.text ? 'Explicar de nuevo' : 'Explicar en palabras simples'}</button></div>`;
   const pos = p.sh && ind.px ? (() => {
     const g = posGain(selSym), val = p.sh * ind.px, pl = p.cost ? val - p.sh * p.cost : null;
     return `<div class="fact"><span>Tu posición</span><b>${qtyF(p.sh)} · $ ${fmtUSD(val)}${g ? ' · ≈ ' + copF(g.valCOP) + ' COP' : ''}</b></div>
@@ -1626,6 +1686,7 @@ function drawDetail(){
     </div>
     <div class="g-bar"><i style="width:${ind.score}%;background:${col.css}"></i></div>
     <div class="flags">${ind.flags.map(f => `<span class="flag ${f[0]}">${esc(f[1])}</span>`).join('') || '<span class="flag">Sin señales especiales</span>'}</div>
+    ${aiBox}
     <div class="d-rng" role="group" aria-label="Rango">${['1S','1M','3M','1A','5A'].map(r => `<button data-drng="${r}" aria-pressed="${detRange === r}">${r}</button>`).join('')}<span id="hvTxt" class="hv"></span></div>
     ${chart}
     <div class="legend">${legend}</div>
@@ -1702,6 +1763,7 @@ const radarPick = e => {
 };
 ['pointerdown', 'keydown'].forEach(t => $('#radar').addEventListener(t, radarPick));
 $('#skDetail').addEventListener('click', e => {
+  if (e.target.closest('[data-ai]')){ if (selSym) aiExplain(selSym); return; }
   const rm = e.target.closest('[data-rm]');
   if (rm){ PF = PF.filter(p => p.sym !== rm.dataset.rm); savePF(); selSym = null; if (!AGG[rm.dataset.rm]) delete W[rm.dataset.rm]; drawStocks(); return; }
   const b = e.target.closest('[data-drng]'); if (!b) return;
@@ -1820,7 +1882,7 @@ function drawCdt(){
         <div><span>Intereses netos a hoy</span><b class="up num">${copS(r.netAcc)}</b></div>
         <div><span>Recibirás al vencimiento</span><b class="num">${copF(r.final)}</b></div>
       </div>
-      <div class="lot-b"><button type="button" class="btn sm" data-cedit="${esc(c.id)}">Editar</button><button type="button" class="btn sm" data-cdel="${esc(c.id)}">Borrar</button></div></article>`;
+      <div class="lot-b"><button type="button" class="btn sm" data-cedit="${esc(c.id)}">Editar</button><button type="button" class="btn sm" data-cics="${esc(c.id)}">Recordatorio</button><button type="button" class="btn sm" data-cdel="${esc(c.id)}">Borrar</button></div></article>`;
   }).join('');
 }
 
@@ -2078,7 +2140,7 @@ $('#impGo').onclick = async () => {
 
 /* ---------- respaldo ---------- */
 const dlgBk = $('#dlgBk');
-const backupData = () => ({app:'ahed', version:1, exported:new Date().toISOString(), watch:PF.map(p => p.sym), lots:LOTS, cdt:CDT});
+const backupData = () => ({app:'ahed', version:1, exported:new Date().toISOString(), watch:PF.map(p => p.sym), lots:LOTS, cdt:CDT, goal:GOAL});
 const backupOpen = () => { $('#bkText').value = ''; $('#bkOut').textContent = ''; dlgBk.showModal(); };
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
@@ -2114,6 +2176,7 @@ async function restoreFrom(txt){
   LOTS = j.lots.filter(l => l && SYM_RE.test(l.sym) && l.qty > 0 && l.price > 0).map(l => ({id:l.id || uid(), sym:l.sym, kind:l.kind === 'crypto' ? 'crypto' : 'stock', broker:l.broker || '', date:l.date || '', qty:+l.qty, price:+l.price, fx:l.fx > 0 ? +l.fx : null, cop:l.cop > 0 ? +l.cop : null}));
   LOTS.forEach(l => { if (l.kind === 'crypto') CRYPTO.add(l.sym); });
   CDT = Array.isArray(j.cdt) ? j.cdt : []; ensureCdtIds(); saveCdt(); toolsInit = false;
+  GOAL = (j.goal && j.goal.amt > 0 && j.goal.date) ? j.goal : null; saveGoal();
   try{ vset(WATCH_KEY, JSON.stringify(Array.isArray(j.watch) ? j.watch : [])); }catch(e){}
   PF = loadPF(); syncPF(); savePF(); saveLots();
   Object.keys(W).forEach(k => delete W[k]); selSym = null;
@@ -2383,6 +2446,7 @@ function drawSum(){
   const best = contrib.slice().sort((a, b) => b[1] - a[1])[0], worst = contrib.slice().sort((a, b) => a[1] - b[1])[0];
   const miss = Object.keys(AGG).filter(sym => !pxOf(sym));
   box.innerHTML = `
+    ${cdtAlertsHtml()}
     <div id="perfSlot"></div>
     ${miss.length ? `<div class="sub warnline">Sin precio todavía: ${esc(miss.join(', '))}. No entra en los totales hasta que cargue su cotización. <button class="btn sm" data-act="retry">Reintentar</button></div>` : ''}
     <div class="sum-hero">
@@ -2391,6 +2455,7 @@ function drawSum(){
       <div class="sum-big"><span>Patrimonio hoy</span><b class="num">${copF(c.val)}</b><small class="num">Invertido ${copF(c.inv)}</small></div>
       <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' acumulado nominal'}</small><small class="num ${c.real.all.gain >= 0 ? 'up' : 'dn'}">Real, en pesos de hoy: ${copS(c.real.all.gain)}${c.real.all.ret == null ? '' : ' (' + pctF(c.real.all.ret) + ')'}</small></div>
     </div>
+    ${goalHtml(c)}
     <h4 class="sec-h4">Cada grupo, aislado y en pesos</h4>
     <div class="cdt-grid sum-cards">
       ${classes.map(x => `<article class="cdt-card">
@@ -2501,6 +2566,7 @@ async function perfSeries(id){
 async function perfStart(){
   if (PERF.busy) return;
   PERF.busy = true; PERF.sig = perfSig(); PERF.miss = [];
+  if (PERF.ai && PERF.ai.sig !== PERF.sig) PERF.ai = null;
   const syms = [...new Set(LOTS.filter(l => l.date).map(l => l.sym))];
   const ids = ['FX', 'SPX', ...syms.filter(isCrypto), ...syms.filter(s => !isCrypto(s))];
   try{
@@ -2511,6 +2577,7 @@ async function perfStart(){
       catch(e){ delete PERF.ser[ids[i]]; PERF.miss.push(ids[i]); }
     }
   } finally { PERF.busy = false; PERF.msg = ''; }
+  if (perfSig() !== PERF.sig){ perfStart(); return; }   // algo cambió mientras cargaba (por ejemplo una compra nueva)
   perfRecompute();
 }
 function perfRecompute(){
@@ -2554,13 +2621,17 @@ function perfCompute(){
     if (live) a[n - 1] = live;
     pxs[l.sym] = a;
   });
-  const V = new Float64Array(n), Fl = new Float64Array(n);
+  const KS = ['cdt', 'stock', 'crypto'], Vk = {}, Fk = {};
+  KS.forEach(k => { Vk[k] = new Float64Array(n); Fk[k] = new Float64Array(n); });
+  const symEnd = {}, symR = {};
   lots.forEach(l => {
-    const s = Math.max(0, dnOf(l.date) - d0), a = pxs[l.sym];
+    const s = Math.max(0, dnOf(l.date) - d0), a = pxs[l.sym], k = isCrypto(l.sym) ? 'crypto' : 'stock';
     for (let i = s; i < n; i++){
       const p = isFinite(a[i]) ? a[i] : l.price, v = l.qty * p * fx[i];
-      V[i] += v; if (i === s) Fl[i] += v;
+      Vk[k][i] += v; if (i === s) Fk[k][i] += v;
     }
+    symEnd[l.sym] = (symEnd[l.sym] || 0) + l.qty * (isFinite(a[n - 1]) ? a[n - 1] : l.price) * fx[n - 1];
+    symR[l.sym] = (n >= 9 && isFinite(a[n - 1]) && isFinite(a[n - 8]) && a[n - 8] > 0) ? a[n - 1] / a[n - 8] - 1 : null;
   });
   const keys = Array.from({length:n}, (_, i) => keyOfDn(d0 + i));
   CDT.forEach(c => {
@@ -2568,13 +2639,15 @@ function perfCompute(){
     if (s >= n) return;
     for (let i = s; i < n; i++){
       const v = cdtCalc(c, keys[i]).now;
-      V[i] += v; if (i === s) Fl[i] += v;
+      Vk.cdt[i] += v; if (i === s) Fk.cdt[i] += v;
     }
   });
-  const twr = div => {
+  const V = new Float64Array(n), Fl = new Float64Array(n);
+  for (let i = 0; i < n; i++) KS.forEach(k => { V[i] += Vk[k][i]; Fl[i] += Fk[k][i]; });
+  const twr = (Va, Fa, div) => {
     const idx = new Float64Array(n).fill(NaN); let prev = 0;
     for (let i = 0; i < n; i++){
-      const d = div ? div[i] : 1, v = V[i] / d, f = Fl[i] / d;
+      const d = div ? div[i] : 1, v = Va[i] / d, f = Fa[i] / d;
       if (!(prev > 0)) idx[i] = v > 0 ? 100 : NaN;
       else idx[i] = idx[i - 1] * ((v - f) / prev);
       prev = v;
@@ -2582,7 +2655,9 @@ function perfCompute(){
     return idx;
   };
   const spCOP = new Float64Array(n); for (let i = 0; i < n; i++) spCOP[i] = spx[i] * fx[i];
-  return {d0, n, today, idxCOP:twr(null), idxUSD:twr(fx), spCOP, spUSD:spx, skipped, missing:PERF.miss.filter(m => m !== 'FX' && m !== 'SPX')};
+  const idxCls = {}, clsEnd = {}; KS.forEach(k => { idxCls[k] = twr(Vk[k], Fk[k], null); clsEnd[k] = Vk[k][n - 1]; });
+  return {d0, n, today, idxCOP:twr(V, Fl, null), idxUSD:twr(V, Fl, fx), spCOP, spUSD:spx, idxCls, clsEnd, symEnd, symR, totalEnd:V[n - 1],
+    fxWeek:(n >= 9 && fx[n - 8] > 0) ? fx[n - 1] / fx[n - 8] - 1 : null, skipped, missing:PERF.miss.filter(m => m !== 'FX' && m !== 'SPX')};
 }
 function perfStartDn(R, today){
   const y = +keyOfDn(today).slice(0, 4);
@@ -2638,6 +2713,8 @@ function perfDraw(){
   const anyClip = rows.find(r => r.w && r.w.clipped);
   const table = `<table class="cmp-t"><tr><th>Periodo</th><th>Tu portafolio</th><th>S&amp;P 500</th><th>Diferencia</th></tr>
     ${rows.map(({R, w: x}) => `<tr class="${R === PERF.range ? 'sel' : ''}"><td>${R}${x && x.clipped ? '*' : ''}</td><td>${x ? cell(x.p) : '—'}</td><td>${x ? cell(x.b) : '—'}</td><td>${x ? `<span class="${x.p - x.b >= 0 ? 'up' : 'dn'}">${(x.p - x.b >= 0 ? '+' : '') + ((x.p - x.b) * 100).toFixed(1)} pp</span>` : '—'}</td></tr>`).join('')}</table>`;
+  const ai = PERF.ai || {};
+  const aiBox = `<div class="ai-box">${ai.text ? `<div class="ai-txt">${aiHtml(ai.text)}</div><div class="sub">Generado con IA a partir de los porcentajes de arriba. Informativo; no es una recomendación.</div>` : ''}${ai.err ? `<div class="sub warnline">${esc(ai.err)}</div>` : ''}<button type="button" class="btn sm" data-perf-ai="1" ${ai.busy ? 'disabled' : ''}>${ai.busy ? 'Pensando…' : ai.text ? 'Explicar de nuevo' : 'Explicar mi semana'}</button><span class="sub">Se envían solo porcentajes y los símbolos de tus activos, nunca montos.</span></div>`;
   const warns = [];
   if (res.skipped.length) warns.push(`${res.skipped.length} compra(s) no entran en la gráfica (sin fecha o sin historial de precios${res.missing.length ? ': ' + res.missing.join(', ') : ''})`);
   el.innerHTML = head + `
@@ -2647,6 +2724,7 @@ function perfDraw(){
     ${table}
     ${anyClip ? `<div class="sub">* Tu primera inversión es del ${esc(dateLab(keyOfDn(anyClip.w.from)))}: en esos periodos se compara desde esa fecha.</div>` : ''}
     ${warns.length ? `<div class="sub warnline">${warns.map(esc).join(' · ')}</div>` : ''}
+    ${aiBox}
     <div class="sub" style="margin-top:8px">Cada día valora lo que tenías ese día con su precio y el dólar de ese día; los CDT suman su interés neto día a día. Una compra nueva no mueve la línea: solo cuenta cómo rindió lo que ya tenías. ${PERF.cur === 'COP' ? 'El S&amp;P 500 también está en pesos, con el efecto del dólar.' : 'En dólares, tus CDT pierden o ganan según el dólar.'} El S&amp;P 500 es el ETF SPY (precio, sin dividendos, igual que tus acciones y cripto). No incluye ventas ni comisiones.</div>`;
   if (geo){
     const svg = el.querySelector('#perfChart'), r = el.querySelector('#perfR'), L = el.querySelector('#perfL'), Cp = el.querySelector('#perfCp'), Cb = el.querySelector('#perfCb'), T = el.querySelector('#perfHv');
@@ -2664,6 +2742,7 @@ function perfDraw(){
 }
 PERF.el.addEventListener('click', e => {
   const r = e.target.closest('[data-prange]'), c = e.target.closest('[data-pcur]'), t = e.target.closest('[data-perf]');
+  if (e.target.closest('[data-perf-ai]')){ perfAi(); return; }
   if (r){ PERF.range = r.dataset.prange; try{ localStorage.setItem('perf_rng', PERF.range); }catch(err){} perfDraw(); }
   else if (c){ PERF.cur = c.dataset.pcur; try{ localStorage.setItem('perf_cur', PERF.cur); }catch(err){} perfDraw(); }
   else if (t){ PERF.sig = ''; PERF.res = null; perfStart(); }
@@ -2676,6 +2755,368 @@ function perfAttach(){
   if (perfSig() !== PERF.sig){ perfStart(); return; }
   if (PERF.res && !PERF.res.err && Date.now() - PERF.compT > 120000) perfRecompute();
 }
+
+/* ---------- Herramientas: avisos de CDT, meta, calculadora, informe de renta e IA ---------- */
+const GOAL_KEY = 'goal_v1';
+function loadGoal(){ try{ const j = JSON.parse(vget(GOAL_KEY) || 'null'); if (j && j.amt > 0 && j.date) return j; }catch(e){} return null; }
+let GOAL = loadGoal();
+const saveGoal = () => { try{ if (GOAL) vset(GOAL_KEY, JSON.stringify(GOAL)); else vdel(GOAL_KEY); }catch(e){} };
+const pesosIn = s => { const v = parseFloat(String(s == null ? '' : s).replace(/[^\d]/g, '')); return isFinite(v) ? v : NaN; };
+const fmtShort = v => { const a = Math.abs(v); return '$ ' + (a >= 1e9 ? (v / 1e9).toFixed(1).replace('.', ',') + ' mil M' : a >= 1e6 ? (v / 1e6).toFixed(1).replace('.', ',') + ' M' : a >= 1e3 ? Math.round(v / 1e3) + ' mil' : Math.round(v)); };
+const rateTxt = v => String(Math.round(v * 100) / 100).replace('.', ',');
+function suggestRate(){
+  try{
+    const c = sumCalc();
+    if (c.ann != null && !c.young && c.ann > 0 && c.ann < 0.4) return Math.round(c.ann * 1000) / 10;
+    if (c.cdt.ann != null && c.cdt.ann > 0) return Math.round(c.cdt.ann * 1000) / 10;
+  }catch(e){}
+  return 10;
+}
+function downloadBlob(name, type, data){
+  const blob = new Blob([data], {type});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+const aiHtml = t => esc(t).split(/\n{2,}/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
+
+/* ----- avisos de vencimiento de CDT ----- */
+function cdtAlerts(){
+  const today = bogKey(Date.now()), out = [];
+  CDT.forEach(c => {
+    if (c.start > today) return;
+    const left = daysBetween(today, c.end), r = cdtCalc(c, today);
+    if (left >= 0 && left <= 30) out.push({c, left, r, lvl: left <= 1 ? 'red' : left <= 7 ? 'amber' : 'blue'});
+    else if (left < 0 && left >= -60) out.push({c, left, r, lvl:'gray'});
+  });
+  return out.sort((a, b) => ((a.left < 0) - (b.left < 0)) || (a.left < 0 ? b.left - a.left : a.left - b.left));
+}
+function cdtAlertsHtml(){
+  const list = cdtAlerts(); if (!list.length) return '';
+  return `<div class="alerts">${list.map(({c, left, r, lvl}) => {
+    const when = left === 0 ? 'hoy' : left === 1 ? 'mañana' : 'en ' + left + ' días';
+    const txt = left >= 0
+      ? `<b>${esc(c.name)}</b> vence ${when} (${esc(dateLab(c.end))}). Recibirás ≈ <span class="num">${copF(r.final)}</span>. Decide con tiempo si lo renuevas o lo retiras.`
+      : `<b>${esc(c.name)}</b> venció hace ${-left} día${-left === 1 ? '' : 's'}. Si lo renovaste o lo retiraste, edítalo o bórralo para que tu patrimonio sea correcto.`;
+    const btn = left >= 0 ? `<button type="button" class="btn sm" data-cics="${esc(c.id)}">Recordatorio</button>` : `<button type="button" class="btn sm" data-go="cdt">Ver mis CDT</button>`;
+    return `<div class="alert ${lvl}"><span>${txt}</span><span>${btn}</span></div>`;
+  }).join('')}</div>`;
+}
+const icsEsc = s => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+function icsFor(list){
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''), today = bogKey(Date.now());
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Ahed//CDT//ES', 'CALSCALE:GREGORIAN'];
+  list.forEach(c => {
+    const r = cdtCalc(c, today);
+    L.push('BEGIN:VEVENT', `UID:cdt-${c.id}@ahed`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${c.end.replace(/-/g, '')}`, `DTEND;VALUE=DATE:${addDays(c.end, 1).replace(/-/g, '')}`,
+      'SUMMARY:' + icsEsc('Vence CDT ' + c.name),
+      'DESCRIPTION:' + icsEsc(`Capital ${copF(c.capital)}. Recibirás ≈ ${copF(r.final)} al vencimiento. Decide si lo renuevas o lo retiras.`),
+      'TRANSP:TRANSPARENT');
+    [['-P29DT15H', 'Faltan 30 días'], ['-P6DT15H', 'Faltan 7 días'], ['-PT15H', 'Vence mañana']].forEach(([t, m]) =>
+      L.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEsc(m + ': ' + c.name), 'TRIGGER:' + t, 'END:VALARM'));
+    L.push('END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.join('\r\n');
+}
+const slug = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cdt';
+
+/* ----- meta de patrimonio ----- */
+const dlgGoal = $('#dlgGoal');
+function openGoal(){
+  const g = GOAL || {};
+  $('#glAmt').value = g.amt ? Math.round(g.amt).toLocaleString('es-CO') : '';
+  $('#glDate').value = g.date || addDays(bogKey(Date.now()), 365 * 5);
+  $('#glRate').value = rateTxt(g.rate != null ? g.rate : suggestRate());
+  $('#glReal').checked = g.real != null ? !!g.real : true;
+  $('#glErr').textContent = ''; $('#glDel').hidden = !GOAL;
+  dlgGoal.showModal();
+}
+$('#glCancel').onclick = () => dlgGoal.close();
+$('#glSave').onclick = () => {
+  const err = m => { $('#glErr').textContent = m; };
+  const amt = pesosIn($('#glAmt').value), date = $('#glDate').value, rate = parseNum($('#glRate').value, 'cant');
+  if (!(amt > 0)) return err('Escribe cuánto quieres tener.');
+  if (!date || date <= bogKey(Date.now())) return err('Elige una fecha futura.');
+  if (!isFinite(rate) || rate < -50 || rate > 200) return err('Escribe una rentabilidad anual, por ejemplo 10.');
+  GOAL = {amt, date, rate, real:$('#glReal').checked}; saveGoal(); dlgGoal.close(); if (!$('#viewSum').hidden) drawSum();
+};
+$('#glDel').onclick = () => { GOAL = null; saveGoal(); dlgGoal.close(); if (!$('#viewSum').hidden) drawSum(); };
+function goalCalc(P){
+  const g = GOAL, days = daysBetween(bogKey(Date.now()), g.date), n = days / 30.4375, pi = inflFwd() / 100;
+  const rUse = g.real ? (1 + g.rate / 100) / (1 + pi) - 1 : g.rate / 100;
+  const plan = rr => {
+    const i = Math.pow(1 + rr, 1 / 12) - 1, grow = Math.pow(1 + i, n), fvNo = P * grow, need = g.amt - fvNo;
+    const pmt = need <= 0 ? 0 : (Math.abs(i) < 1e-9 ? need / Math.max(n, 1) : need * i / (grow - 1));
+    return {fvNo, pmt};
+  };
+  return {days, n, pi, base:plan(rUse), low:plan(rUse - 0.03)};
+}
+function goalHtml(c){
+  if (!GOAL) return '';
+  const g = GOAL, P = c.val, pct = clamp(P / g.amt * 100, 0, 100), k = goalCalc(P);
+  let msg;
+  if (P >= g.amt) msg = '¡Ya llegaste a tu meta! Puedes subirla desde Editar.';
+  else if (k.days <= 0) msg = 'La fecha de tu meta ya pasó. Edítala para fijar una nueva.';
+  else if (k.base.pmt <= 0) msg = `Sin aportar nada más, llegarías a <b class="num">${copF(k.base.fvNo)}</b> el ${esc(dateLab(g.date))}, por encima de tu meta.`;
+  else msg = `Para llegar el ${esc(dateLab(g.date))} necesitas aportar ≈ <b class="num">${copF(k.base.pmt)}</b> al mes${g.real ? ' (en pesos de hoy; súbelo cada año con la inflación)' : ''}. Sin aportes llegarías a <span class="num">${copF(k.base.fvNo)}</span> (${(k.base.fvNo / g.amt * 100).toFixed(0)}% de la meta).`;
+  const low = (P < g.amt && k.days > 0 && k.base.pmt > 0) ? `<div class="sub">Si rindiera 3 puntos menos, necesitarías ≈ <span class="num">${copF(k.low.pmt)}</span> al mes.</div>` : '';
+  return `<div class="goal"><div class="c-top"><span class="c-sym">Mi meta de patrimonio</span><button type="button" class="btn sm" data-goal="edit">Editar</button></div>
+    <div><b class="goal-n num">${copF(P)}</b> <span class="sub">de <span class="num">${copF(g.amt)}</span>${g.real ? ' (pesos de hoy)' : ''} · ${pct.toFixed(0)}%</span></div>
+    <div class="prog"><i style="width:${pct.toFixed(1)}%"></i></div>
+    <div class="sub">${msg}</div>${low}
+    <div class="sub">Supone ${esc(rateTxt(g.rate))}% E.A.${g.real ? ` y una inflación de ${(k.pi * 100).toFixed(1).replace('.', ',')}% anual` : ''}. Es una proyección, no una promesa.</div></div>`;
+}
+
+/* ----- calculadora de interés compuesto ----- */
+const dlgCalc = $('#dlgCalc'); let ccReady = false;
+function ccFill(all){
+  const c = sumCalc();
+  if (all || !ccReady){
+    $('#ccCap').value = (c.val > 0 ? Math.round(c.val / 100000) * 100000 : 10000000).toLocaleString('es-CO');
+    $('#ccRate').value = rateTxt(suggestRate());
+  }
+  if (!ccReady){ $('#ccAp').value = (500000).toLocaleString('es-CO'); $('#ccYears').value = '10'; $('#ccInf').value = rateTxt(inflFwd()); }
+  ccReady = true;
+}
+function ccChart(pts){
+  const bars = pts.slice(1), Wd = 560, Ht = 220, ml = 52, mr = 8, mt = 8, mb = 22, H = Ht - mt - mb;
+  const mx = Math.max(...bars.map(p => p.bal), 1) * 1.05, bw = (Wd - ml - mr) / bars.length, Y = v => mt + H - v / mx * H, step = Math.ceil(bars.length / 8);
+  let s = `<svg viewBox="0 0 ${Wd} ${Ht}" width="100%" role="img" aria-label="Crecimiento de la inversión año a año">`;
+  [0, 0.5, 1].forEach(f => { const v = mx * f; s += `<line x1="${ml}" x2="${Wd - mr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)" opacity=".6"/><text x="${ml - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" font-size="10.5" fill="var(--mut)">${f ? esc(fmtShort(v)) : '0'}</text>`; });
+  bars.forEach((p, j) => {
+    const x = ml + j * bw + bw * 0.12, w = bw * 0.76, put = Math.max(0, Math.min(p.put, p.bal)), gain = Math.max(0, p.bal - put);
+    s += `<rect x="${x.toFixed(1)}" y="${Y(put).toFixed(1)}" width="${w.toFixed(1)}" height="${(put / mx * H).toFixed(1)}" fill="var(--blue)"/><rect x="${x.toFixed(1)}" y="${Y(put + gain).toFixed(1)}" width="${w.toFixed(1)}" height="${(gain / mx * H).toFixed(1)}" fill="var(--up)"/>`;
+    if (j % step === 0 || j === bars.length - 1) s += `<text x="${(x + w / 2).toFixed(1)}" y="${Ht - 6}" text-anchor="middle" font-size="10.5" fill="var(--mut)">${p.m % 12 === 0 ? p.m / 12 : (p.m / 12).toFixed(1)} a</text>`;
+  });
+  return s + '</svg>';
+}
+function ccCompute(){
+  const out = $('#ccOut');
+  const cap = pesosIn($('#ccCap').value) || 0, ap = pesosIn($('#ccAp').value) || 0, rate = parseNum($('#ccRate').value, 'cant'), yrs = parseNum($('#ccYears').value, 'cant'), inf = parseNum($('#ccInf').value, 'cant');
+  if (!isFinite(rate) || rate <= -50 || rate > 300 || !(yrs > 0) || yrs > 60 || !(cap + ap > 0)){ out.innerHTML = '<div class="sub">Escribe capital o aporte, la tasa y el plazo (hasta 60 años) para ver el resultado.</div>'; return; }
+  const n = Math.max(1, Math.round(yrs * 12)), i = Math.pow(1 + rate / 100, 1 / 12) - 1;
+  let bal = cap; const pts = [{m:0, bal:cap, put:cap}];
+  for (let m = 1; m <= n; m++){ bal = bal * (1 + i) + ap; if (m % 12 === 0 || m === n) pts.push({m, bal, put:cap + ap * m}); }
+  const put = cap + ap * n, gain = bal - put, infl = isFinite(inf) ? inf / 100 : 0, realFin = bal / Math.pow(1 + infl, n / 12);
+  out.innerHTML = `<div class="cc-stats">
+      <div><span>Valor final</span><b class="num">${copF(bal)}</b></div>
+      <div><span>Total que pusiste</span><b class="num">${copF(put)}</b></div>
+      <div><span>Intereses ganados</span><b class="num ${gain >= 0 ? 'up' : 'dn'}">${copS(gain)}</b></div>
+      <div><span>Valor final en pesos de hoy</span><b class="num">${copF(realFin)}</b><small>con inflación de ${esc(rateTxt(infl * 100))}% anual</small></div></div>
+    ${bal > 0 && gain > 0 ? `<div class="sub">Los intereses son el ${(gain / bal * 100).toFixed(0)}% del valor final.</div>` : ''}
+    ${ccChart(pts)}
+    <div class="legend"><span><i style="background:var(--blue)"></i>Lo que pusiste</span><span><i style="background:var(--up)"></i>Intereses</span></div>
+    <details class="how"><summary>Ver año por año</summary><div class="tbl-wrap"><table class="cmp-t"><tr><th>Año</th><th>Pusiste</th><th>Intereses</th><th>Saldo</th></tr>
+      ${pts.slice(1).map(p => `<tr><td>${p.m % 12 === 0 ? p.m / 12 : (p.m / 12).toFixed(1)}</td><td class="num">${copF(p.put)}</td><td class="num">${copF(p.bal - p.put)}</td><td class="num">${copF(p.bal)}</td></tr>`).join('')}</table></div></details>
+    <div class="sub">Los intereses se capitalizan cada mes y los aportes entran al final de cada mes. No incluye impuestos ni retención.</div>`;
+}
+$('#ccClose').onclick = () => dlgCalc.close();
+$('#ccUseMine').onclick = () => { ccFill(true); ccCompute(); };
+dlgCalc.addEventListener('input', ccCompute);
+
+/* ----- informe para la declaración de renta ----- */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = u8 => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+function zipStore(files){
+  const enc = new TextEncoder(), chunks = [], central = []; let off = 0;
+  const w16 = (a, v) => a.push(v & 255, (v >>> 8) & 255), w32 = (a, v) => a.push(v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255);
+  files.forEach(f => {
+    const nm = enc.encode(f.name), data = enc.encode(f.data), crc = crc32(data), sz = data.length;
+    const h = []; w32(h, 0x04034b50); w16(h, 20); w16(h, 0x0800); w16(h, 0); w16(h, 0); w16(h, 0x21); w32(h, crc); w32(h, sz); w32(h, sz); w16(h, nm.length); w16(h, 0);
+    chunks.push(new Uint8Array(h), nm, data);
+    const c = []; w32(c, 0x02014b50); w16(c, 20); w16(c, 20); w16(c, 0x0800); w16(c, 0); w16(c, 0); w16(c, 0x21); w32(c, crc); w32(c, sz); w32(c, sz); w16(c, nm.length); w16(c, 0); w16(c, 0); w16(c, 0); w16(c, 0); w32(c, 0); w32(c, off);
+    central.push(new Uint8Array(c), nm);
+    off += h.length + nm.length + sz;
+  });
+  let cs = 0; central.forEach(x => { cs += x.length; });
+  const e = []; w32(e, 0x06054b50); w16(e, 0); w16(e, 0); w16(e, files.length); w16(e, files.length); w32(e, cs); w32(e, off); w16(e, 0);
+  const parts = [...chunks, ...central, new Uint8Array(e)], total = parts.reduce((a, p) => a + p.length, 0), outb = new Uint8Array(total);
+  let o = 0; parts.forEach(p => { outb.set(p, o); o += p.length; });
+  return outb;
+}
+function xlsxBytes(sheets){
+  const X = s => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const colName = i => { let s = ''; i++; while (i > 0){ const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+  const FM = {b:1, int:2, dec:3, pct:4};
+  const sheetXml = rows => {
+    let x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="36" customWidth="1"/><col min="2" max="12" width="19" customWidth="1"/></cols><sheetData>';
+    rows.forEach((row, r) => {
+      x += `<row r="${r + 1}">`;
+      row.forEach((cell, c) => {
+        if (cell == null || cell === '') return;
+        const o = (typeof cell === 'object') ? cell : {v:cell}, ref = colName(c) + (r + 1), s = o.f && FM[o.f] ? ` s="${FM[o.f]}"` : '';
+        if (typeof o.v === 'number' && isFinite(o.v)) x += `<c r="${ref}"${s}><v>${o.v}</v></c>`;
+        else x += `<c r="${ref}" t="inlineStr"${s}><is><t xml:space="preserve">${X(o.v)}</t></is></c>`;
+      });
+      x += '</row>';
+    });
+    return x + '</sheetData></worksheet>';
+  };
+  const NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main', RN = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships', PK = 'http://schemas.openxmlformats.org/package/2006';
+  const hd = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const files = [
+    {name:'[Content_Types].xml', data:hd + `<Types xmlns="${PK}/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+    {name:'_rels/.rels', data:hd + `<Relationships xmlns="${PK}/relationships"><Relationship Id="rId1" Type="${RN}/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml', data:hd + `<workbook xmlns="${NS}" xmlns:r="${RN}"><sheets>${sheets.map((s, i) => `<sheet name="${X(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels', data:hd + `<Relationships xmlns="${PK}/relationships">${sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="${RN}/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="${RN}/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml', data:hd + `<styleSheet xmlns="${NS}"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="10" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`}
+  ];
+  sheets.forEach((s, i) => files.push({name:`xl/worksheets/sheet${i + 1}.xml`, data:sheetXml(s.rows)}));
+  return zipStore(files);
+}
+const dlgRenta = $('#dlgRenta');
+const RT = {seq:0, data:null};
+const priceAtDn = (s, dn) => { let v = null; for (let i = 0; i < s.d.length; i++){ if (s.d[i] <= dn) v = s.c[i]; else break; } return v; };
+function openRenta(){
+  const curY = +bogKey(Date.now()).slice(0, 4);
+  let minY = curY; LOTS.forEach(l => { if (l.date) minY = Math.min(minY, +l.date.slice(0, 4)); }); CDT.forEach(c => { minY = Math.min(minY, +c.start.slice(0, 4)); });
+  const ys = []; for (let y = curY; y >= Math.max(minY, curY - 5); y--) ys.push(y);
+  $('#rtYear').innerHTML = ys.map(y => `<option value="${y}">${y}${y === curY ? ' (al día de hoy)' : ''}</option>`).join('');
+  $('#rtYear').value = String(ys.includes(curY - 1) ? curY - 1 : curY);
+  dlgRenta.showModal(); rentaRun(+$('#rtYear').value);
+}
+async function rentaRun(Y){
+  const seq = ++RT.seq, out = $('#rtOut'), xb = $('#rtXlsx'); xb.disabled = true; RT.data = null;
+  if (!LOTS.length && !CDT.length){ out.innerHTML = '<div class="empty">Todavía no tienes compras ni CDT cargados.</div>'; return; }
+  const today = bogKey(Date.now()), curY = +today.slice(0, 4), cut = Y < curY ? Y + '-12-31' : today, cutDn = dnOf(cut), prevEnd = (Y - 1) + '-12-31';
+  const lots = LOTS.filter(l => l.date && l.date <= cut), undated = LOTS.filter(l => !l.date).length, syms = [...new Set(lots.map(l => l.sym))];
+  out.innerHTML = '<div class="sub" role="status">Buscando el dólar del corte…</div>';
+  const trm = await trmOn(cut);
+  if (seq !== RT.seq) return;
+  const px = {}, miss = [];
+  for (let i = 0; i < syms.length; i++){
+    const sy = syms[i];
+    out.innerHTML = `<div class="sub" role="status">Cargando precios al corte… ${i + 1}/${syms.length} (${esc(sy)}). La primera vez puede tardar un poco.</div>`;
+    if (!PERF.ser[sy]){ try{ PERF.ser[sy] = await perfSeries(sy); }catch(e){} }
+    if (seq !== RT.seq) return;
+    let p = null;
+    if (cut === today) p = pxOf(sy);
+    if (p == null && PERF.ser[sy]) p = priceAtDn(PERF.ser[sy], cutDn);
+    if (p == null) miss.push(sy); else px[sy] = p;
+  }
+  const groups = {};
+  lots.forEach(l => {
+    const k = l.sym + '|' + (l.broker || 'Sin broker');
+    const g = groups[k] || (groups[k] = {sym:l.sym, broker:l.broker || 'Sin broker', crypto:isCrypto(l.sym), qty:0, costUSD:0, costCOP:0, noFx:0});
+    g.qty += l.qty; g.costUSD += l.qty * l.price; if (l.fx) g.costCOP += l.qty * l.price * l.fx; else g.noFx++;
+  });
+  const pos = Object.values(groups).map(g => {
+    const p = px[g.sym] == null ? null : px[g.sym];
+    return {...g, price:p, valUSD:p == null ? null : g.qty * p, valCOP:(p != null && trm) ? g.qty * p * trm.v : null};
+  }).sort((a, b) => (b.valCOP || 0) - (a.valCOP || 0));
+  const cdt = CDT.filter(c => c.start <= cut && c.end > prevEnd).map(c => {
+    const total = Math.max(1, daysBetween(c.start, c.end)), el1 = clamp(daysBetween(c.start, cut), 0, total), el0 = clamp(daysBetween(c.start, prevEnd), 0, total);
+    const gross = c.capital * (eaFactor(c.ea, el1) - eaFactor(c.ea, el0)), rt = (c.ret == null ? 4 : c.ret) / 100, vig = c.end > cut;
+    return {name:c.name, capital:c.capital, ea:c.ea, start:c.start, end:c.end, gross, ret:gross * rt, vig, bal:vig ? c.capital + c.capital * eaFactor(c.ea, el1) : null};
+  });
+  const sum = k => pos.reduce((a, g) => a + (g[k] || 0), 0);
+  const T = {trm:trm ? trm.v : null, trmSrc:trm ? trm.src : '', extCOP:sum('valCOP'), extUSD:sum('valUSD'), costCOP:sum('costCOP'), cdtBal:cdt.reduce((a, c) => a + (c.bal || 0), 0), cdtInt:cdt.reduce((a, c) => a + c.gross, 0), cdtRet:cdt.reduce((a, c) => a + c.ret, 0)};
+  RT.data = {Y, cut, today, T, pos, cdt, lots, miss, undated, noFx:pos.reduce((a, g) => a + g.noFx, 0)};
+  rentaRender(); xb.disabled = false;
+}
+function rentaRender(){
+  const d = RT.data, out = $('#rtOut'), T = d.T, cutTxt = d.cut === d.today ? 'hoy (' + dateLab(d.cut) + ')' : dateLab(d.cut);
+  const warn = [];
+  if (!T.trm) warn.push('No pude conseguir el dólar del corte, por eso no hay valores en pesos de los activos del exterior');
+  if (d.miss.length) warn.push('Sin precio al corte: ' + d.miss.join(', '));
+  if (d.undated) warn.push(`${d.undated} compra(s) sin fecha no entran`);
+  if (d.noFx) warn.push(`${d.noFx} compra(s) sin dólar de su fecha: el costo en pesos queda incompleto`);
+  const tb = (head, rows) => `<div class="tbl-wrap"><table class="cmp-t"><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  out.innerHTML = `<div class="cc-stats">
+      <div><span>Dólar (TRM) al corte</span><b class="num">${T.trm ? '$ ' + fmtCOP(T.trm) : '—'}</b><small>${esc(T.trmSrc)}</small></div>
+      <div><span>Activos en el exterior</span><b class="num">${T.trm ? copF(T.extCOP) : '—'}</b><small class="num">US$ ${fmtUSD(T.extUSD)}</small></div>
+      <div><span>CDT vigentes al corte</span><b class="num">${copF(T.cdtBal)}</b></div>
+      <div><span>Intereses de CDT en ${d.Y}</span><b class="num">${copF(T.cdtInt)}</b><small class="num">Retención estimada ${copF(T.cdtRet)}</small></div></div>
+    <div class="sub">Corte: ${esc(cutTxt)}.</div>
+    ${warn.length ? `<div class="sub warnline">${warn.map(esc).join(' · ')}</div>` : ''}
+    <h4 class="sec-h4">Acciones, ETF y cripto (por broker)</h4>
+    ${d.pos.length ? tb(['Activo', 'Broker', 'Cantidad', 'Precio US$', 'Valor US$', 'Valor COP', 'Costo COP'], d.pos.map(g => [`<b>${esc(g.sym)}</b>`, esc(g.broker), qtyF(g.qty), g.price == null ? '—' : fmtUSD(g.price), g.valUSD == null ? '—' : fmtUSD(g.valUSD), g.valCOP == null ? '—' : copF(g.valCOP), g.costCOP ? copF(g.costCOP) : '—'])) : '<div class="sub">Sin posiciones a esa fecha.</div>'}
+    <h4 class="sec-h4">CDT activos en ${d.Y}</h4>
+    ${d.cdt.length ? tb(['CDT', 'Capital', 'Tasa E.A.', 'Vence', 'Intereses del año', 'Retención est.', 'Valor al corte'], d.cdt.map(c => [esc(c.name), copF(c.capital), c.ea.toFixed(2) + '%', esc(dateLab(c.end)), copF(c.gross), copF(c.ret), c.bal == null ? 'Vencido' : copF(c.bal)])) : '<div class="sub">Sin CDT activos ese año.</div>'}
+    <div class="sub sum-note">Informativo; no es asesoría tributaria. Revísalo con tu contador. Ahed aún no registra ventas, dividendos ni comisiones, y no sabe cómo clasifica tu contador cada activo, por eso los muestra por broker. Los intereses de CDT son una estimación causada con la tasa E.A.; tu banco entrega el certificado oficial.</div>`;
+}
+function rentaXlsx(){
+  const d = RT.data; if (!d) return;
+  const T = d.T, b = v => ({v, f:'b'}), n0 = v => ({v, f:'int'}), n2 = v => ({v, f:'dec'});
+  const sheets = [
+    {name:'Resumen', rows:[[b('Informe para la declaración de renta · Ahed')], ['Año gravable', d.Y], ['Corte', d.cut], ['Dólar (TRM) al corte', T.trm == null ? 'sin dato' : n2(T.trm)], ['Origen del dólar', T.trmSrc], [],
+      [b('Activos en el exterior (acciones, ETF y cripto)')], ['Valor total en US$', n2(T.extUSD)], ['Valor total en COP', T.trm ? n0(T.extCOP) : 'sin dato'], ['Costo de compra en COP', n0(d.pos.reduce((a, g) => a + g.costCOP, 0))], [],
+      [b('CDT')], ['Valor de CDT vigentes al corte', n0(T.cdtBal)], ['Intereses causados en el año (brutos)', n0(T.cdtInt)], ['Retención en la fuente estimada', n0(T.cdtRet)], [],
+      ['Informativo; no es asesoría tributaria. No incluye ventas, dividendos ni comisiones. Revísalo con tu contador.']]},
+    {name:'Activos exterior', rows:[['Activo', 'Tipo', 'Broker', 'Cantidad', 'Precio al corte US$', 'Valor US$', 'Valor COP', 'Costo US$', 'Costo COP'].map(b),
+      ...d.pos.map(g => [g.sym, g.crypto ? 'Cripto' : 'Acción / ETF', g.broker, g.qty, g.price == null ? '' : n2(g.price), g.valUSD == null ? '' : n2(g.valUSD), g.valCOP == null ? '' : n0(g.valCOP), n2(g.costUSD), g.costCOP ? n0(g.costCOP) : ''])]},
+    {name:'CDT', rows:[['CDT', 'Capital', 'Tasa E.A. %', 'Inicio', 'Vencimiento', 'Intereses del año (brutos)', 'Retención estimada', 'Valor al corte'].map(b),
+      ...d.cdt.map(c => [c.name, n0(c.capital), n2(c.ea), c.start, c.end, n0(c.gross), n0(c.ret), c.bal == null ? 'Vencido' : n0(c.bal)])]},
+    {name:'Compras', rows:[['Fecha', 'Activo', 'Broker', 'Cantidad', 'Precio US$', 'Dólar de la fecha', 'Costo COP'].map(b),
+      ...d.lots.slice().sort((x, y) => x.date.localeCompare(y.date)).map(l => [l.date, l.sym, l.broker || 'Sin broker', l.qty, n2(l.price), l.fx ? n2(l.fx) : '', l.fx ? n0(l.qty * l.price * l.fx) : ''])]}
+  ];
+  downloadBlob(`ahed-informe-renta-${d.Y}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', xlsxBytes(sheets));
+}
+$('#rtYear').addEventListener('change', e => rentaRun(+e.target.value));
+$('#rtClose').onclick = () => { RT.seq++; dlgRenta.close(); };
+$('#rtXlsx').onclick = rentaXlsx;
+
+/* ----- IA: explicar una acción del radar y resumen de la semana ----- */
+async function aiCall(tipo, datos){
+  if (!location.protocol.startsWith('http')) throw new Error('La IA solo funciona en la página publicada (ahed.vercel.app).');
+  let pin = ''; try{ pin = vget('ahed_pin') || ''; }catch(e){}
+  if (!pin){ pin = (prompt('Escribe tu código de acceso de Ahed (el mismo de Leer extracto):') || '').trim(); if (!pin) throw new Error('Necesito el código de acceso.'); }
+  const r = await fetch('/api/ia', {method:'POST', headers:{'Content-Type':'application/json', 'x-ahed-code':pin}, body:JSON.stringify({tipo, datos})});
+  const j = await r.json().catch(() => ({error:'Respuesta inválida del servidor.'}));
+  if (r.status === 401){ try{ vdel('ahed_pin'); }catch(e){} }
+  if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
+  try{ vset('ahed_pin', pin); }catch(e){}
+  return j.text;
+}
+const pc1 = v => (v == null || !isFinite(v)) ? null : Math.round(v * 1000) / 10;
+async function aiExplain(sym){
+  const w = W[sym]; if (!w || !w.ind || (w.ai && w.ai.busy)) return;
+  w.ai = {busy:true}; drawDetail();
+  const ind = w.ind, m = w.m || {};
+  const datos = {simbolo:sym, tipo:isCrypto(sym) ? 'criptomoneda' : 'acción o ETF', precio_usd:ind.px, indice_oportunidad:ind.score, lectura_del_indice:scoreLabel(ind.score),
+    distancia_al_maximo_52_semanas_pct:pc1(ind.dd), rsi_14_dias:ind.r == null ? null : Math.round(ind.r), distancia_a_media_200_dias_pct:pc1(ind.dist), volatilidad_anual_pct:pc1(ind.vol),
+    rendimiento_1_mes_pct:pc1(ind.r1m), rendimiento_3_meses_pct:pc1(ind.r3m), rendimiento_1_ano_pct:pc1(ind.r1a), vix:S.vix.price,
+    pe:m.peTTM ?? m.peBasicExclExtraTTM ?? null, beta:m.beta ?? null, dividendo_pct:m.currentDividendYieldTTM ?? null, crecimiento_ingresos_5_anos_pct:m.revenueGrowth5Y ?? null, margen_neto_pct:m.netProfitMarginTTM ?? null,
+    partes_del_indice:ind.parts.map(p => ({nombre:p.label, puntos:Math.round(p.pts), maximo:p.max, detalle:p.txt})), senales:ind.flags.map(f => f[1])};
+  try{ w.ai = {text:await aiCall('explicar', datos)}; }catch(e){ w.ai = {err:(e && e.message) || 'No pude generar la explicación.'}; }
+  drawDetail();
+}
+function perfWinArr(res, arr, R){
+  const inc = arr.findIndex(x => isFinite(x)); if (inc < 0) return null;
+  const want = perfStartDn(R, res.today) - res.d0, s = Math.max(want, 0, inc), last = res.n - 1;
+  if (last - s < 1 || !(arr[s] > 0)) return null;
+  return arr[last] / arr[s] - 1;
+}
+function perfWeekData(res){
+  const wC = perfWin(res, '1S', 'COP'), wU = perfWin(res, '1S', 'USD'); if (!wC || !wU) return null;
+  const tot = res.totalEnd || 1, names = {cdt:'CDT', stock:'Acciones y ETF', crypto:'Cripto'};
+  return {periodo:`últimos ${res.today - wC.from} días`, portafolio_pesos_pct:pc1(wC.p), sp500_pesos_pct:pc1(wC.b), portafolio_dolares_pct:pc1(wU.p), sp500_dolares_pct:pc1(wU.b), dolar_contra_peso_cambio_pct:pc1(res.fxWeek),
+    grupos:Object.keys(names).filter(k => res.clsEnd[k] > 0).map(k => ({grupo:names[k], peso_pct:pc1(res.clsEnd[k] / tot), rendimiento_en_pesos_pct:pc1(perfWinArr(res, res.idxCls[k], '1S'))})),
+    activos_principales:Object.entries(res.symEnd).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([s, v]) => ({activo:s, peso_pct:pc1(v / tot), cambio_de_precio_en_dolares_pct:pc1(res.symR[s])}))};
+}
+async function perfAi(){
+  if (!PERF.res || PERF.res.err || PERF.res.empty || (PERF.ai && PERF.ai.busy)) return;
+  const datos = perfWeekData(PERF.res);
+  if (!datos){ PERF.ai = {err:'Todavía hay muy poco historial para explicar la semana.'}; perfDraw(); return; }
+  PERF.ai = {busy:true}; perfDraw();
+  try{ PERF.ai = {text:await aiCall('semana', datos), sig:perfSig()}; }catch(e){ PERF.ai = {err:(e && e.message) || 'No pude generar la explicación.'}; }
+  perfDraw();
+}
+
+/* ----- botones y atajos ----- */
+$('#toolCalc').onclick = () => { ccFill(false); ccCompute(); dlgCalc.showModal(); };
+$('#toolGoal').onclick = openGoal;
+$('#toolRenta').onclick = openRenta;
+$('#cdtIcsAll').onclick = () => {
+  const today = bogKey(Date.now()), list = CDT.filter(c => c.end >= today);
+  if (!list.length){ alert('No tienes CDT vigentes para recordar.'); return; }
+  downloadBlob('ahed-cdt-recordatorios.ics', 'text/calendar', icsFor(list));
+};
+document.addEventListener('click', e => {
+  const ics = e.target.closest('[data-cics]');
+  if (ics){ const c = CDT.find(x => x.id === ics.dataset.cics); if (c) downloadBlob(`ahed-cdt-${slug(c.name)}.ics`, 'text/calendar', icsFor([c])); return; }
+  if (e.target.closest('[data-goal]')) openGoal();
+});
 
 /* ---------- ciclo ---------- */
 A.forEach(a => render(a));
@@ -2706,7 +3147,7 @@ quotesOnly(); drawSum();
 /* ---------- Seguridad: contraseña, cifrado y bloqueo por inactividad ---------- */
 (function(){
 'use strict';
-const VAULT = 'ahed_vault', SECURE = ['lots_v1', 'cdt_v1', 'pf_v2', 'pf_v1', 'ahed_pin'], ITER = 600000;
+const VAULT = 'ahed_vault', SECURE = ['lots_v1', 'cdt_v1', 'goal_v1', 'pf_v2', 'pf_v1', 'ahed_pin'], ITER = 600000;
 const enc = new TextEncoder(), dec = new TextDecoder();
 const ls = {
   get:k => { try{ return localStorage.getItem(k); }catch(e){ return null; } },
