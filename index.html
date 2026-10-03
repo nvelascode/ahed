@@ -353,7 +353,7 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
     <button class="btn" id="toolRenta">Informe para renta</button>
   </div>
   <div id="sumBody"></div>
-  <div class="sub infl-row">Inflación: IPC del DANE hasta agosto de 2026 (6,24% anual). Para los meses que el DANE aún no publica, asumo <input id="inflFwd" type="number" step="0.1" min="-5" max="100" inputmode="decimal" aria-label="Inflación anual asumida"> % anual.</div>
+  <div class="sub infl-row"><span id="inflInfo"></span> Para los meses que el DANE aún no publica, asumo <input id="inflFwd" type="number" step="0.1" min="-5" max="100" inputmode="decimal" aria-label="Inflación anual asumida"> % anual.</div>
 </div>
 
 <div id="viewMarket" hidden>
@@ -602,9 +602,8 @@ dialog input{width:100%;background:var(--bg);border:1px solid var(--line);border
 <p class="note">
   Precios: Binance (BTC, en tiempo real por websocket), Finnhub (VOO, QQQ, VGT) y Twelve Data (USD/COP); si alguno falla intenta Yahoo Finance, que el navegador suele bloquear.
   Calendario: feed público de Forex Factory, horas en Bogotá. La pestaña "Con datos reales" usa TradingView e incluye valor actual, pronóstico y previo.
-  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Versión 18.
+  Solo informativo, no es asesoría financiera. VIX: CBOE (con ~15 min de retraso). Horarios y festivos: calendario oficial del NYSE 2026-2027. Radar: historial de Twelve Data y datos de Finnhub; los indicadores son técnicos, no predicen el futuro. Inflación: IPC del DANE, actualizado automáticamente. Versión 19.
 </p>
-
 
 <script>
 window.__ahedStart = function(){
@@ -2305,7 +2304,11 @@ $('#scAdd').onclick = async () => {
 };
 
 /* ---------- Inflación de Colombia (IPC del DANE) para el rendimiento real ---------- */
-const INF_M = {   // variación mensual del IPC (%), 2010–2021
+/* La serie mensual se completa por capas y gana la que tenga el mes más reciente (siempre verificada contra la serie incluida):
+   1) esta serie, incluida en la app: siempre funciona, también sin internet;
+   2) ipc.json del repositorio: se puede editar a mano;
+   3) /api/ipc: lee el anexo oficial del DANE apenas lo publica y agrega los meses nuevos. */
+const IPC_BUILTIN = {
   2010:[0.69,0.83,0.25,0.46,0.10,0.11,-0.04,0.11,-0.14,-0.09,0.19,0.65],
   2011:[0.91,0.60,0.27,0.12,0.28,0.32,0.14,-0.03,0.31,0.19,0.14,0.42],
   2012:[0.73,0.61,0.12,0.14,0.30,0.08,-0.02,0.04,0.29,0.16,-0.14,0.09],
@@ -2318,13 +2321,97 @@ const INF_M = {   // variación mensual del IPC (%), 2010–2021
   2019:[0.60,0.57,0.43,0.50,0.31,0.27,0.22,0.09,0.23,0.16,0.10,0.26],
   2020:[0.42,0.67,0.57,0.16,-0.32,-0.38,0.00,-0.01,0.32,-0.06,-0.15,0.38],
   2021:[0.41,0.64,0.51,0.59,1.00,-0.05,0.32,0.45,0.38,0.01,0.50,0.73],
-  2025:[0.565,0.565,0.565,0.565,0.565,0.565,0.565,0.19,0.251,0.251,0.07,0.27],   // acumulado ene–ago 4,22%; total 5,10%
-  2026:[1.01,1.01,1.01,0.78,0.43,0.43,0.17,0.39]       // ene–ago 2026 (acumulado 5,35%; Ene–Mar y May–Jun repartidos parejo)
-};
-const INF_ANUAL = {2022:13.12, 2023:9.28, 2024:5.20};   // diciembre a diciembre; se reparte parejo entre los meses
-const INF_ULTIMO = '2026-08', INF_ULTIMO_ANUAL = 6.24;             // último dato publicado: agosto de 2026, 6,24% anual
-const inflFwd = () => { try{ const v = parseFloat(localStorage.getItem('infl_fwd')); if (isFinite(v) && v > -5 && v < 100) return v; }catch(e){} return INF_ULTIMO_ANUAL; };
-let INF_CACHE = null;
+  2022:[1.67,1.63,1.00,1.25,0.84,0.51,0.81,1.02,0.93,0.72,0.77,1.26],
+  2023:[1.78,1.66,1.05,0.78,0.43,0.30,0.50,0.70,0.54,0.25,0.47,0.45],
+  2024:[0.92,1.09,0.70,0.59,0.43,0.32,0.20,0.00,0.24,-0.13,0.27,0.46],
+  2025:[0.94,1.14,0.52,0.66,0.32,0.10,0.28,0.19,0.32,0.18,0.07,0.27],
+  2026:[1.18,1.08,0.78,0.78,0.47,0.39,0.17,0.39]
+};   // variación mensual del IPC total nacional (%), de enero de 2010 en adelante
+let INF_M = IPC_BUILTIN, INF_SRC = 'incluida en la app', INF_CACHE = null, INF_CHK = 0, ipcBusy = false;
+try{ INF_CHK = +localStorage.getItem('ipc_chk') || 0; }catch(e){}
+const MESES_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const ipcFlat = M => { const out = []; for (let y = 2010; M[y]; y++) out.push(...M[y]); return out; };
+const ipcN = M => ipcFlat(M).length;                                    // meses con dato desde enero de 2010
+const ipcKeyOfN = n => (2010 + Math.floor((n - 1) / 12)) + '-' + String(((n - 1) % 12) + 1).padStart(2, '0');
+const ipcLast = () => ipcKeyOfN(ipcN(INF_M));                           // último mes con dato, por ejemplo '2026-08'
+const ipcLabel = k => MESES_ES[+k.slice(5, 7) - 1] + ' de ' + k.slice(0, 4);
+function ipcExpected(){      // último mes que el DANE ya debería haber publicado (lo publica entre el día 8 y el 15 del mes siguiente)
+  const k = bogKey(Date.now()), y = +k.slice(0, 4), m = +k.slice(5, 7), d = +k.slice(8, 10);
+  return ipcKeyOfN((y - 2010) * 12 + m - (d >= 16 ? 1 : 2));
+}
+const ipcStale = () => ipcLast() < ipcExpected();
+function ipcAnnual(){        // inflación de los últimos 12 meses con dato, en %
+  const f = ipcFlat(INF_M).slice(-12);
+  return f.length < 12 ? 5 : (f.reduce((a, x) => a * (1 + x / 100), 1) - 1) * 100;
+}
+const ipcPct = v => v.toFixed(2).replace('.', ',');
+function ipcValid(d){        // forma correcta y coincidencia con la serie incluida en los meses en común
+  try{
+    if (!d || typeof d !== 'object' || !d[2010]) return false;
+    let n = 0;
+    for (let y = 2010; d[y] !== undefined; y++){
+      const a = d[y];
+      if (!Array.isArray(a) || a.length < 1 || a.length > 12) return false;
+      if (a.some(x => typeof x !== 'number' || !isFinite(x) || Math.abs(x) > 5)) return false;
+      if (a.length < 12 && d[y + 1] !== undefined) return false;
+      n += a.length;
+    }
+    const base = ipcFlat(IPC_BUILTIN), his = ipcFlat(d);
+    if (n < base.length) return false;
+    for (let i = 0; i < base.length; i++) if (Math.abs(base[i] - his[i]) > 0.011) return false;
+    return true;
+  }catch(e){ return false; }
+}
+function ipcAdopt(d, src){   // solo se adopta una serie válida y con más meses que la actual
+  if (!ipcValid(d) || ipcN(d) <= ipcN(INF_M)) return false;
+  INF_M = d; INF_SRC = src; INF_CACHE = null;
+  return true;
+}
+function ipcInfoDraw(){
+  const el = $('#inflInfo'); if (!el) return;
+  const chk = INF_CHK ? ' · revisado el ' + new Date(INF_CHK).toLocaleDateString('es-CO', {timeZone:TZ, day:'numeric', month:'short'}) : '';
+  el.innerHTML = `Inflación: IPC del DANE hasta ${esc(ipcLabel(ipcLast()))} (${ipcPct(ipcAnnual())}% anual). Fuente: ${esc(INF_SRC)}${chk}${ipcBusy ? ' · buscando dato nuevo…' : ''}.`
+    + (ipcStale() ? ` <b class="warnline">Desactualizado: ya debería estar ${esc(ipcLabel(ipcExpected()))}.</b>` : '');
+  const fi = $('#inflFwd'); if (fi && document.activeElement !== fi) fi.value = inflFwd();
+}
+function ipcAlertHtml(){
+  if (!ipcStale()) return '';
+  return `<div class="alerts"><div class="alert amber"><span><b>IPC desactualizado.</b> Tu último dato es de ${esc(ipcLabel(ipcLast()))} y el DANE ya debería haber publicado ${esc(ipcLabel(ipcExpected()))}. Para los meses sin dato, el rendimiento real usa el supuesto de ${ipcPct(inflFwd())}% anual (puedes cambiarlo abajo). Si el aviso sigue, agrega el mes nuevo al final de la lista de su año en el archivo ipc.json.</span><span><button type="button" class="btn sm" data-ipc="refresh">${ipcBusy ? 'Buscando…' : 'Buscar dato nuevo'}</button></span></div></div>`;
+}
+async function ipcGet(url){
+  const c = new AbortController(), to = setTimeout(() => c.abort(), 20000);
+  try{
+    const r = await fetch(url, {signal:c.signal, cache:'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(to); }
+}
+async function ipcRefresh(force){
+  if (ipcBusy || !location.protocol.startsWith('http')) return;
+  if (!force && Date.now() - INF_CHK < 6 * 3600e3) return;
+  ipcBusy = true; ipcInfoDraw(); if (force && !$('#viewSum').hidden) drawSum();
+  let changed = false, answered = false;
+  try{
+    const j = await ipcGet('/api/ipc');                                  // 1) busca el dato nuevo en el DANE
+    if (j && j.data){ answered = true; if (ipcAdopt(j.data, /^DANE/.test(j.fuente || '') ? 'DANE (automático)' : 'archivo ipc.json')) changed = true; }
+  }catch(e){}
+  if (!answered){
+    try{
+      const j = await ipcGet('ipc.json');                                // 2) si la función no responde, el archivo del repositorio
+      const d = j && j.data ? j.data : j;
+      answered = true; if (ipcAdopt(d, 'archivo ipc.json')) changed = true;
+    }catch(e){}
+  }
+  if (answered){ INF_CHK = Date.now(); try{ localStorage.setItem('ipc_chk', String(INF_CHK)); }catch(e){} }
+  if (changed){ try{ localStorage.setItem('ipc_cache', JSON.stringify({d:INF_M, src:INF_SRC})); }catch(e){} }
+  ipcBusy = false; ipcInfoDraw();
+  if ((changed || force) && !$('#viewSum').hidden) drawSum();
+}
+function ipcInit(){          // serie guardada de la última vez (si es más nueva que la incluida) y búsqueda de dato nuevo
+  try{ const c = JSON.parse(localStorage.getItem('ipc_cache') || 'null'); if (c && c.d) ipcAdopt(c.d, (c.src || 'guardada') + ' (guardada)'); }catch(e){}
+  ipcInfoDraw(); ipcRefresh(false);
+}
+const inflFwd = () => { try{ const v = parseFloat(localStorage.getItem('infl_fwd')); if (isFinite(v) && v > -5 && v < 100) return v; }catch(e){} return Math.round(ipcAnnual() * 100) / 100; };
 function inflIdx(){
   const fwd = inflFwd(), nowKey = bogKey(Date.now()).slice(0, 7);
   if (INF_CACHE && INF_CACHE.fwd === fwd && INF_CACHE.nowKey === nowKey) return INF_CACHE.idx;
@@ -2333,10 +2420,7 @@ function inflIdx(){
   for (let y = 2010; ; y++){
     for (let m = 1; m <= 12; m++){
       const key = `${y}-${String(m).padStart(2, '0')}`;
-      let pct;
-      if (INF_M[y] && INF_M[y][m - 1] != null) pct = INF_M[y][m - 1];
-      else if (INF_ANUAL[y] != null) pct = (Math.pow(1 + INF_ANUAL[y] / 100, 1 / 12) - 1) * 100;
-      else pct = (Math.pow(1 + fwd / 100, 1 / 12) - 1) * 100;      // meses que el DANE aún no publica
+      const pct = (INF_M[y] && INF_M[y][m - 1] != null) ? INF_M[y][m - 1] : (Math.pow(1 + fwd / 100, 1 / 12) - 1) * 100;   // meses que el DANE aún no publica: supuesto
       level *= 1 + pct / 100; idx[key] = level; mon[key] = pct;
       if (key >= nowKey){ INF_CACHE = {fwd, nowKey, idx, mon}; return idx; }
     }
@@ -2446,12 +2530,13 @@ function drawSum(){
   const best = contrib.slice().sort((a, b) => b[1] - a[1])[0], worst = contrib.slice().sort((a, b) => a[1] - b[1])[0];
   const miss = Object.keys(AGG).filter(sym => !pxOf(sym));
   box.innerHTML = `
+    ${ipcAlertHtml()}
     ${cdtAlertsHtml()}
     <div id="perfSlot"></div>
     ${miss.length ? `<div class="sub warnline">Sin precio todavía: ${esc(miss.join(', '))}. No entra en los totales hasta que cargue su cotización. <button class="btn sm" data-act="retry">Reintentar</button></div>` : ''}
     <div class="sum-hero">
       <div class="sum-big"><span>Rentabilidad anual nominal</span><b class="${c.ann == null ? '' : (c.ann >= 0 ? 'up' : 'dn')}">${annF(c.ann)}</b><small>${esc(annNote(c.young, c.hasDates))}</small></div>
-      <div class="sum-big"><span>Rentabilidad anual real</span><b class="${c.real.all.ann == null ? '' : (c.real.all.ann >= 0 ? 'up' : 'dn')}">${annF(c.real.all.ann)}</b><small>Ya descontada la inflación del DANE (${INF_ULTIMO_ANUAL.toFixed(2).replace('.', ',')}% anual a agosto de 2026)</small></div>
+      <div class="sum-big"><span>Rentabilidad anual real</span><b class="${c.real.all.ann == null ? '' : (c.real.all.ann >= 0 ? 'up' : 'dn')}">${annF(c.real.all.ann)}</b><small>Ya descontada la inflación del DANE (${ipcPct(ipcAnnual())}% anual a ${esc(ipcLabel(ipcLast()))})</small></div>
       <div class="sum-big"><span>Patrimonio hoy</span><b class="num">${copF(c.val)}</b><small class="num">Invertido ${copF(c.inv)}</small></div>
       <div class="sum-big"><span>Ganancia total</span><b class="num ${c.pl >= 0 ? 'up' : 'dn'}">${copS(c.pl)}</b><small class="num">${c.ret == null ? '' : pctF(c.ret) + ' acumulado nominal'}</small><small class="num ${c.real.all.gain >= 0 ? 'up' : 'dn'}">Real, en pesos de hoy: ${copS(c.real.all.gain)}${c.real.all.ret == null ? '' : ' (' + pctF(c.real.all.ret) + ')'}</small></div>
     </div>
@@ -2478,10 +2563,11 @@ function drawSum(){
     <div class="contrib">${contrib.map(([lab, v]) => `<div class="ct-row"><span>${esc(lab)}</span><div class="ct-bar"><i class="${v >= 0 ? 'up' : 'dn'}" style="width:${(Math.abs(v) / maxAbs * 100).toFixed(1)}%"></i></div><b class="num ${v >= 0 ? 'up' : 'dn'}">${copS(v)}</b></div>`).join('')}</div>
     ${best && worst && best !== worst ? `<div class="sub">Lo que más te aporta: <b>${esc(best[0])}</b>${worst[1] < 0 ? ` · Lo que más te resta: <b>${esc(worst[0])}</b>` : ''}.</div>` : ''}` : ''}
     <div class="sub sum-note">La rentabilidad anual se calcula con la fecha y el monto de cada compra y de cada CDT, para que cosas con edades distintas sean comparables. Cuando algo lleva menos de 6 meses, el número anual es una proyección de un periodo corto y puede ser extremo; úsalo solo como referencia. No incluye ventas, impuestos ni comisiones. No es asesoría financiera.</div>
-    <div class="sub sum-note"><b>Rendimiento real:</b> es el nominal descontando la inflación (IPC total del DANE). Cada peso que invertiste se lleva a pesos de hoy según el IPC de su fecha de compra, y con eso se recalcula la ganancia y la tasa anual. Si tus compras sin fecha pesan mucho, el real las trata sin inflación y se queda corto. Las cifras mensuales de 2022 a 2024 se reparten parejo dentro de cada año (los totales anuales son los del DANE).</div>`;
+    <div class="sub sum-note"><b>Rendimiento real:</b> es el nominal descontando la inflación (IPC total del DANE). Cada peso que invertiste se lleva a pesos de hoy según el IPC de su fecha de compra, y con eso se recalcula la ganancia y la tasa anual. Si tus compras sin fecha pesan mucho, el real las trata sin inflación y se queda corto. La inflación sale del DANE mes a mes desde 2010; para los meses que el DANE aún no publica se usa el supuesto de abajo.</div>`;
   perfAttach();
 }
 $('#sumBody').addEventListener('click', e => {
+  if (e.target.closest('[data-ipc]')){ ipcRefresh(true); return; }
   const b = e.target.closest('[data-go]'); if (!b) return;
   document.querySelector(`.vtab[data-view="${b.dataset.go}"]`).click();
 });
@@ -3131,6 +3217,7 @@ async function all(force){
   refreshPrices();
   if (!S.btc.ws) loadBTC();
   loadCal(force);
+  ipcRefresh(!!force);
 }
 $('#refresh').onclick = () => { S.usdcop.last = 0; all(true); };
 setInterval(tickClock, 1000); tickClock();
@@ -3138,6 +3225,7 @@ setInterval(() => { if (!document.hidden) refreshPrices(); }, 30000);
 setInterval(() => { if (!document.hidden && !S.btc.ws) loadBTC(); }, 30000);
 setInterval(() => loadCal(false), 15 * 60 * 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) all(false); });
+ipcInit();
 loadBTC(); refreshPrices(); loadCal(false);
 quotesOnly(); drawSum();
 
